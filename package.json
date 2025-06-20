@@ -1,9 +1,9 @@
 {
-  "name": "github-copilot-metrics-mcp",
+  "name": "github-copilot-metrics-mcp-server",
   "version": "1.0.0",
   "main": "dist/server.js",
   "bin": {
-    "github-copilot-metrics-mcp": "dist/server.js"
+    "github-copilot-metrics-mcp-server": "dist/server.js"
   },
   "scripts": {
     "build": "tsc",
@@ -11,7 +11,12 @@
     "dev": "fastmcp dev src/server.ts",
     "lint": "prettier --check . && eslint . && tsc --noEmit",
     "test": "vitest run",
-    "format": "prettier --write . && eslint --fix ."
+    "format": "prettier --write . && eslint --fix .",
+    "docker:build": "docker build -t github-copilot-metrics-mcp-server .",
+    "docker:run": "docker run --env-file .env github-copilot-metrics-mcp-server",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
   },
   "keywords": [
     "github",

@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  github-copilot-metrics-mcp-server:
+    build: .
+    image: github-copilot-metrics-mcp-server:latest
+    container_name: github-copilot-metrics-mcp-server
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - API_TIMEOUT=${API_TIMEOUT:-30000}
+      - CACHE_TTL=${CACHE_TTL:-300}
+      - RATE_LIMIT_ENABLED=${RATE_LIMIT_ENABLED:-true}
+      - RATE_LIMIT_MAX_REQUESTS=${RATE_LIMIT_MAX_REQUESTS:-100}
+      - RATE_LIMIT_WINDOW_MS=${RATE_LIMIT_WINDOW_MS:-60000}
+    env_file:
+      - .env
+    restart: unless-stopped
+    # For stdio-based MCP communication, you typically don't need port mapping
+    # ports:
+    #   - "3000:3000"
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "node", "-e", "process.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'

@@ -1,26 +1,91 @@
 # GitHub Copilot Metrics MCP Server
 
+<div align="center">
+
+[![npm](https://img.shields.io/npm/v/github-copilot-metrics-mcp-server?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/github-copilot-metrics-mcp-server)
+[![Docker](https://img.shields.io/badge/Docker-Available-blue?style=for-the-badge&logo=docker)](https://hub.docker.com/r/github/copilot-metrics-mcp-server)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](./LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+
+<a href="https://marketplace.visualstudio.com/items?itemName=github.copilot-metrics-mcp-server">
+  <img src="https://img.shields.io/badge/VS%20Code-Install%20Server-blue?style=for-the-badge&logo=visual-studio-code" alt="Install for VS Code">
+</a>
+<a href="https://marketplace.visualstudio.com/items?itemName=github.copilot-metrics-mcp-server">
+  <img src="https://img.shields.io/badge/VS%20Code%20Insiders-Install%20Server-green?style=for-the-badge&logo=visual-studio-code" alt="Install for VS Code Insiders">
+</a>
+
+</div>
+
 A Model Context Protocol (MCP) server for managing GitHub Copilot metrics and user management using the [FastMCP](https://github.com/punkpeye/fastmcp) framework.
 
 This server provides comprehensive tools for GitHub Copilot administration, including usage metrics, seat management, and reporting capabilities with robust error handling and logging.
 
+## Quick Install
+
+### One-Click Installation
+
+```bash
+# Install globally via npm
+npm install -g github-copilot-metrics-mcp-server
+
+# Or run with Docker
+docker run --env-file .env ghcr.io/your-org/github-copilot-metrics-mcp-server
+```
+
+### VS Code Integration
+
+Add to your Claude Desktop config:
+
+```json
+{
+  "mcpServers": {
+    "github-copilot": {
+      "command": "github-copilot-metrics-mcp-server",
+      "env": { "GITHUB_TOKEN": "your_token_here" }
+    }
+  }
+}
+```
+
 ## Installation
 
-You can install this server as a package or run it locally.
+You can install this server as a package, run it locally, or use Docker.
 
 ### Install via npm (Recommended)
 
 ```bash
-npm install -g github-copilot-metrics-mcp
+npm install -g github-copilot-metrics-mcp-server
 ```
 
 ### Local Development
 
 ```bash
 git clone <your-repository-url>
-cd github-copilot-metrics-mcp
+cd github-copilot-metrics-mcp-server
 npm install
 npm run build
+```
+
+### Docker (Containerized)
+
+#### Using Docker Compose (Recommended)
+
+```bash
+git clone <your-repository-url>
+cd github-copilot-metrics-mcp
+cp .env.example .env
+# Edit .env with your GitHub token
+docker-compose up -d
+```
+
+#### Using Docker directly
+
+```bash
+# Build the image
+docker build -t github-copilot-metrics-mcp .
+
+# Run the container
+docker run --env-file .env github-copilot-metrics-mcp
 ```
 
 ## Usage with Claude Desktop
@@ -35,7 +100,7 @@ Edit the file at `~/Library/Application Support/Claude/claude_desktop_config.jso
 {
   "mcpServers": {
     "github-copilot": {
-      "command": "github-copilot-metrics-mcp",
+      "command": "github-copilot-metrics-mcp-server",
       "env": {
         "GITHUB_TOKEN": "your_github_token_here"
       }
@@ -52,7 +117,7 @@ Edit the file at `%APPDATA%/Claude/claude_desktop_config.json`:
 {
   "mcpServers": {
     "github-copilot": {
-      "command": "github-copilot-metrics-mcp",
+      "command": "github-copilot-metrics-mcp-server",
       "env": {
         "GITHUB_TOKEN": "your_github_token_here"
       }
@@ -70,7 +135,25 @@ If you're running the server locally, use the local path:
   "mcpServers": {
     "github-copilot": {
       "command": "node",
-      "args": ["/path/to/github-copilot-metrics-mcp/dist/server.js"],
+      "args": ["/path/to/github-copilot-metrics-mcp-server/dist/server.js"],
+      "env": {
+        "GITHUB_TOKEN": "your_github_token_here"
+      }
+    }
+  }
+}
+```
+
+### For Docker Container
+
+If you're running the server in a Docker container, you can use the container directly:
+
+```json
+{
+  "mcpServers": {
+    "github-copilot": {
+      "command": "docker",
+      "args": ["run", "--rm", "--env-file", "/path/to/.env", "github-copilot-metrics-mcp"],
       "env": {
         "GITHUB_TOKEN": "your_github_token_here"
       }
@@ -87,7 +170,7 @@ You can configure the server using environment variables in the configuration:
 {
   "mcpServers": {
     "github-copilot": {
-      "command": "github-copilot-metrics-mcp",
+      "command": "github-copilot-metrics-mcp-server",
       "env": {
         "GITHUB_TOKEN": "your_github_token_here",
         "LOG_LEVEL": "info",
@@ -107,7 +190,7 @@ To get started, clone the repository and install the dependencies.
 
 ```bash
 git clone <your-repository-url>
-cd github-copilot-metrics-mcp
+cd github-copilot-metrics-mcp-server
 npm install
 ```
 
@@ -151,6 +234,119 @@ This project uses [Prettier](https://prettier.io/), [ESLint](https://eslint.org/
 ```bash
 npm run lint    # Check for linting issues
 npm run format  # Format the code
+```
+
+## Docker Deployment
+
+### Building and Running with Docker
+
+The server can be containerized using Docker for easy deployment and isolation.
+
+#### Prerequisites
+
+- Docker and Docker Compose installed
+- `.env` file with your GitHub credentials
+
+#### Quick Start with Docker Compose
+
+1. Clone the repository:
+
+```bash
+git clone <your-repository-url>
+cd github-copilot-metrics-mcp-server
+```
+
+2. Set up environment variables:
+
+```bash
+cp .env.example .env
+# Edit .env with your GitHub token
+```
+
+3. Start the container:
+
+```bash
+npm run docker:up
+```
+
+4. View logs:
+
+```bash
+npm run docker:logs
+```
+
+5. Stop the container:
+
+```bash
+npm run docker:down
+```
+
+#### Manual Docker Commands
+
+Build the image:
+
+```bash
+npm run docker:build
+# or
+docker build -t github-copilot-metrics-mcp-server .
+```
+
+Run the container:
+
+```bash
+npm run docker:run
+# or
+docker run --env-file .env github-copilot-metrics-mcp-server
+```
+
+#### Docker Environment Variables
+
+The container supports the same environment variables as the local installation:
+
+```bash
+GITHUB_TOKEN=your_token_here
+LOG_LEVEL=info
+API_TIMEOUT=30000
+CACHE_TTL=300
+```
+
+#### Production Deployment
+
+For production deployments, consider:
+
+- Using Docker secrets for sensitive credentials
+- Setting resource limits (memory, CPU)
+- Implementing health checks
+- Using a reverse proxy if exposing HTTP endpoints
+- Setting up log aggregation
+
+Example production docker-compose.yml:
+
+```yaml
+version: '3.8'
+services:
+  github-copilot-metrics-mcp-server:
+    image: github-copilot-metrics-mcp-server:latest
+    restart: unless-stopped
+    environment:
+      - LOG_LEVEL=warn
+    secrets:
+      - github_token
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "node", "-e", "process.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+secrets:
+  github_token:
+    external: true
 ```
 
 ## Features
@@ -286,7 +482,7 @@ To contribute to this project:
 
 ```bash
 git clone <repository-url>
-cd github-copilot-metrics-mcp
+cd github-copilot-metrics-mcp-server
 npm install
 npm run dev     # Start in development mode
 npm test        # Run tests
