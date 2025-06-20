@@ -72,3 +72,75 @@ In order to use this workflow, you need to:
    1. [Create a new automation token](https://www.npmjs.com/settings/punkpeye/tokens/new)
    2. Add token as `NPM_TOKEN` environment secret (Settings → Secrets and Variables → Actions → "Manage environment secrets" → "release" → Add environment secret)
 1. Grant write access to the workflow (Settings → Actions → General → Workflow permissions → "Read and write permissions")
+
+# GitHub Copilot MCP Server
+
+A Model Context Protocol (MCP) server for managing GitHub Copilot metrics and user management using the FastMCP framework.
+
+## Features
+
+### Copilot Metrics
+- Get usage metrics for organizations
+- Get usage metrics for enterprises
+- List Copilot seats
+- Get seat details for specific users
+
+### User Management
+- Add Copilot seats for users
+- Remove Copilot seats for users
+
+## Setup
+
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Set up authentication by creating a `.env` file:
+
+```bash
+GITHUB_TOKEN=your_github_personal_access_token
+```
+
+3. Build and run:
+```bash
+npm run build
+npm start
+```
+
+## Development
+
+```bash
+npm run dev    # Run in development mode
+npm test       # Run tests
+npm run build  # Build for production
+```
+
+## Examples
+
+Here are some example prompts you can use with this GitHub Copilot MCP server:
+
+### Getting Usage Metrics
+- "Show me the Copilot usage metrics for my organization for the last 30 days"
+- "Get the current Copilot seat utilization for the 'acme-corp' organization"
+- "What are the usage trends for our enterprise Copilot deployment?"
+
+### Managing User Seats
+- "Add Copilot seats for users: john.doe, jane.smith, and bob.wilson"
+- "Remove Copilot access for the user 'former-employee'"
+- "Show me the details of john.doe's Copilot seat"
+
+### Generating Reports
+- "Analyze our Copilot usage data and provide recommendations for optimization"
+- "Create a summary report of our Copilot metrics for the executive team"
+- "Compare this month's usage with last month and highlight key changes"
+
+### Bulk Operations
+- "List all users with Copilot seats in our organization"
+- "Add Copilot seats for all members of the 'engineering' team"
+- "Show me which users haven't used Copilot in the last 30 days"
+
+### Enterprise Management
+- "Get enterprise-wide Copilot usage metrics for our organization"
+- "Show me seat utilization across all organizations in our enterprise"
+- "Generate a cost analysis report for our Copilot deployment"

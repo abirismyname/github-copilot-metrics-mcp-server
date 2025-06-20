@@ -24,8 +24,12 @@
   "license": "MIT",
   "description": "A boilerplate for FastMCP",
   "dependencies": {
-    "fastmcp": "^1.27.3",
-    "zod": "^3.24.4"
+    "@jest/globals": "^30.0.2",
+    "@octokit/auth-app": "^6.1.3",
+    "@octokit/rest": "^20.1.2",
+    "dotenv": "^16.3.1",
+    "fastmcp": "latest",
+    "zod": "latest"
   },
   "release": {
     "branches": [
@@ -41,6 +45,7 @@
   "devDependencies": {
     "@eslint/js": "^9.26.0",
     "@tsconfig/node22": "^22.0.1",
+    "@types/jest": "^30.0.0",
     "eslint-config-prettier": "^10.1.3",
     "eslint-plugin-perfectionist": "^4.12.3",
     "jiti": "^2.4.2",
