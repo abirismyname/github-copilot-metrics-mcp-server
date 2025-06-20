@@ -1,7 +1,10 @@
 {
-  "name": "fastmcp-boilerplate",
+  "name": "github-copilot-metrics-mcp",
   "version": "1.0.0",
-  "main": "dist/index.js",
+  "main": "dist/server.js",
+  "bin": {
+    "github-copilot-metrics-mcp": "dist/server.js"
+  },
   "scripts": {
     "build": "tsc",
     "start": "tsx src/server.ts",
@@ -11,9 +14,12 @@
     "format": "prettier --write . && eslint --fix ."
   },
   "keywords": [
-    "fastmcp",
+    "github",
+    "copilot", 
     "mcp",
-    "boilerplate"
+    "model-context-protocol",
+    "metrics",
+    "fastmcp"
   ],
   "repository": {
     "url": "https://github.com/punkpeye/fastmcp-boilerplate"
@@ -22,7 +28,7 @@
   "homepage": "https://glama.ai/mcp",
   "type": "module",
   "license": "MIT",
-  "description": "A boilerplate for FastMCP",
+  "description": "A GitHub Copilot Metrics MCP server for managing Copilot metrics and user management",
   "dependencies": {
     "@jest/globals": "^30.0.2",
     "@octokit/auth-app": "^6.1.3",

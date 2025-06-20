@@ -3,7 +3,22 @@ import { GitHubService } from './github-service.js';
 import { ValidationError, GitHubAPIError } from './error-handling.js';
 
 // Mock the dependencies
-vi.mock('@octokit/rest');
+const mockOctokit = {
+  rest: {
+    copilot: {
+      usageMetricsForOrg: vi.fn(),
+      listCopilotSeats: vi.fn(),
+      addCopilotSeatsForUsers: vi.fn(),
+      cancelCopilotSeatAssignmentForUsers: vi.fn(),
+      getCopilotSeatDetailsForUser: vi.fn(),
+    }
+  }
+};
+
+vi.mock('@octokit/rest', () => ({
+  Octokit: vi.fn(() => mockOctokit)
+}));
+
 vi.mock('./logger.js', () => ({
   Logger: {
     getInstance: () => ({
@@ -17,31 +32,10 @@ vi.mock('./logger.js', () => ({
 
 describe('GitHubService', () => {
   let service: GitHubService;
-  let mockOctokit: any;
 
   beforeEach(() => {
     // Reset mocks
     vi.clearAllMocks();
-    
-    // Mock Octokit
-    mockOctokit = {
-      rest: {
-        copilot: {
-          usageMetricsForOrg: vi.fn(),
-          listCopilotSeats: vi.fn(),
-          addCopilotSeatsForUsers: vi.fn(),
-          cancelCopilotSeatAssignmentForUsers: vi.fn(),
-          getCopilotSeatDetailsForUser: vi.fn(),
-        }
-      }
-    };
-
-    const { Octokit } = vi.hoisted(() => ({
-      Octokit: vi.fn(() => mockOctokit)
-    }));
-    
-    vi.mocked(require('@octokit/rest')).Octokit = Octokit;
-
     service = new GitHubService({ token: 'test-token' });
   });
 

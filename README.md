@@ -1,8 +1,105 @@
-# GitHub Copilot MCP Server
+# GitHub Copilot Metrics MCP Server
 
 A Model Context Protocol (MCP) server for managing GitHub Copilot metrics and user management using the [FastMCP](https://github.com/punkpeye/fastmcp) framework.
 
 This server provides comprehensive tools for GitHub Copilot administration, including usage metrics, seat management, and reporting capabilities with robust error handling and logging.
+
+## Installation
+
+You can install this server as a package or run it locally.
+
+### Install via npm (Recommended)
+
+```bash
+npm install -g github-copilot-metrics-mcp
+```
+
+### Local Development
+
+```bash
+git clone <your-repository-url>
+cd github-copilot-metrics-mcp
+npm install
+npm run build
+```
+
+## Usage with Claude Desktop
+
+To use this MCP server with Claude Desktop, add the following to your Claude Desktop configuration file:
+
+### On macOS
+
+Edit the file at `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "github-copilot": {
+      "command": "github-copilot-metrics-mcp",
+      "env": {
+        "GITHUB_TOKEN": "your_github_token_here"
+      }
+    }
+  }
+}
+```
+
+### On Windows
+
+Edit the file at `%APPDATA%/Claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "github-copilot": {
+      "command": "github-copilot-metrics-mcp",
+      "env": {
+        "GITHUB_TOKEN": "your_github_token_here"
+      }
+    }
+  }
+}
+```
+
+### For Local Development
+
+If you're running the server locally, use the local path:
+
+```json
+{
+  "mcpServers": {
+    "github-copilot": {
+      "command": "node",
+      "args": ["/path/to/github-copilot-metrics-mcp/dist/server.js"],
+      "env": {
+        "GITHUB_TOKEN": "your_github_token_here"
+      }
+    }
+  }
+}
+```
+
+### Environment Variables
+
+You can configure the server using environment variables in the configuration:
+
+```json
+{
+  "mcpServers": {
+    "github-copilot": {
+      "command": "github-copilot-metrics-mcp",
+      "env": {
+        "GITHUB_TOKEN": "your_github_token_here",
+        "LOG_LEVEL": "info",
+        "API_TIMEOUT": "30000",
+        "CACHE_TTL": "300"
+      }
+    }
+  }
+}
+```
+
+After updating the configuration, restart Claude Desktop for the changes to take effect.
 
 ## Quick Start
 
@@ -10,7 +107,7 @@ To get started, clone the repository and install the dependencies.
 
 ```bash
 git clone <your-repository-url>
-cd github-copilot-mcp-server
+cd github-copilot-metrics-mcp
 npm install
 ```
 
@@ -130,7 +227,7 @@ The server provides the following MCP tools:
 
 ## Examples
 
-Here are some example prompts you can use with this GitHub Copilot MCP server:
+Here are some example prompts you can use with this GitHub Copilot Metrics MCP server:
 
 ### Getting Usage Metrics
 
@@ -189,7 +286,7 @@ To contribute to this project:
 
 ```bash
 git clone <repository-url>
-cd github-copilot-mcp-server
+cd github-copilot-metrics-mcp
 npm install
 npm run dev     # Start in development mode
 npm test        # Run tests
