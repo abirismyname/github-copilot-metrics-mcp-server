@@ -9,6 +9,7 @@
     "build": "tsc",
     "start": "tsx src/server.ts",
     "dev": "fastmcp dev src/server.ts",
+    "serve": "node dist/server.js",
     "lint": "prettier --check . && eslint . && tsc --noEmit",
     "test": "vitest run",
     "format": "prettier --write . && eslint --fix .",

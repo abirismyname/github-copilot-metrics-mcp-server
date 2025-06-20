@@ -74,12 +74,31 @@ server.addTool({
     readOnlyHint: true,
     title: "Get Copilot Usage Metrics for Organization",
   },
-  description: "Retrieve GitHub Copilot usage metrics for an organization",
+  description: "Retrieve GitHub Copilot usage metrics for an organization. Falls back to seat information if usage metrics are not available.",
   execute: async (args) => {
-    return executeToolSafely(
-      () => githubService.getCopilotUsageForOrg(args.org, args.since, args.until, args.page, args.per_page),
-      'get_copilot_usage_org'
-    );
+    try {
+      return await executeToolSafely(
+        () => githubService.getCopilotUsageForOrg(args.org, args.since, args.until, args.page, args.per_page),
+        'get_copilot_usage_org'
+      );
+    } catch (error) {
+      // If usage metrics fail with 404, try to get seat information instead
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('404') || errorMessage.includes('Not Found')) {
+        logger.info("Usage metrics not available, falling back to seat information", { org: args.org });
+        const seatsData = await executeToolSafely(
+          () => githubService.getCopilotSeatsForOrg(args.org, args.page, args.per_page),
+          'get_copilot_seats_org_fallback'
+        );
+        return JSON.stringify({
+          note: "Usage metrics not available for this organization. Showing seat information instead.",
+          organization: args.org,
+          seats_data: JSON.parse(seatsData),
+          requested_period: args.since && args.until ? `${args.since} to ${args.until}` : "Last 30 days (not available)"
+        }, null, 2);
+      }
+      throw error;
+    }
   },
   name: "get_copilot_usage_org",
   parameters: z.object({

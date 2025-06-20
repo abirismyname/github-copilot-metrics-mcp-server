@@ -25,11 +25,13 @@ export class GitHubService {
   constructor(config: GitHubConfig) {
     logger.info("Initializing GitHub service", { 
       hasToken: !!config.token,
-      hasAppCreds: !!(config.appId && config.privateKey && config.installationId)
+      hasAppCreds: !!(config.appId && config.privateKey && config.installationId),
+      tokenPrefix: config.token ? config.token.substring(0, 20) + '...' : undefined
     });
 
     if (config.token) {
       this.octokit = new Octokit({ auth: config.token });
+      logger.info("GitHub service initialized with token authentication");
     } else if (config.appId && config.privateKey && config.installationId) {
       this.octokit = new Octokit({
         authStrategy: createAppAuth,
@@ -39,6 +41,7 @@ export class GitHubService {
           installationId: config.installationId,
         },
       });
+      logger.info("GitHub service initialized with GitHub App authentication");
     } else {
       throw new Error("Either token or GitHub App credentials must be provided");
     }
@@ -52,12 +55,34 @@ export class GitHubService {
 
     logger.info("Getting Copilot usage for organization", { org, since, until, page, per_page });
 
-    return await retryOperation(
-      () => this.octokit.rest.copilot.usageMetricsForOrg({ org, since, until, page, per_page }),
-      3,
-      1000,
-      `get Copilot usage for org ${org}`
-    ).catch(error => handleAPIError(error, `get Copilot usage for org ${org}`));
+    try {
+      const result = await retryOperation(
+        async () => {
+          logger.info("Making API call to GitHub", { 
+            endpoint: `/orgs/${org}/copilot/usage`,
+            params: { org, since, until, page, per_page }
+          });
+          const response = await this.octokit.rest.copilot.usageMetricsForOrg({ org, since, until, page, per_page });
+          logger.info("API call successful", { 
+            status: response.status,
+            dataKeys: Object.keys(response.data || {}),
+            dataLength: Array.isArray(response.data) ? response.data.length : 'not-array'
+          });
+          return response;
+        },
+        3,
+        1000,
+        `get Copilot usage for org ${org}`
+      );
+      return result;
+    } catch (error) {
+      logger.error("API call failed", { 
+        error: error instanceof Error ? error.message : String(error),
+        org,
+        endpoint: `/orgs/${org}/copilot/usage`
+      });
+      throw handleAPIError(error, `get Copilot usage for org ${org}`);
+    }
   }
 
   async getCopilotUsageForEnterprise(enterprise: string, since?: string, until?: string, page = 1, per_page = 50) {

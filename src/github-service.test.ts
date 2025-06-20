@@ -36,7 +36,7 @@ describe('GitHubService', () => {
   beforeEach(() => {
     // Reset mocks
     vi.clearAllMocks();
-    service = new GitHubService({ token: 'test-token' });
+    service = new GitHubService({ token: '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' });
   });
 
   describe('Constructor', () => {
@@ -63,10 +63,10 @@ describe('GitHubService', () => {
       const mockResponse = { data: { total_seats: 10 } };
       mockOctokit.rest.copilot.usageMetricsForOrg.mockResolvedValue(mockResponse);
 
-      const result = await service.getCopilotUsageForOrg('test-org');
+      const result = await service.getCopilotUsageForOrg('octodemo');
       
       expect(mockOctokit.rest.copilot.usageMetricsForOrg).toHaveBeenCalledWith({
-        org: 'test-org',
+        org: 'octodemo',
         since: undefined,
         until: undefined,
         page: 1,
@@ -81,13 +81,13 @@ describe('GitHubService', () => {
     });
 
     test('should validate date parameters', async () => {
-      await expect(service.getCopilotUsageForOrg('test-org', 'invalid-date')).rejects.toThrow(ValidationError);
-      await expect(service.getCopilotUsageForOrg('test-org', '2024-01-01', 'invalid-date')).rejects.toThrow(ValidationError);
+      await expect(service.getCopilotUsageForOrg('octodemo', 'invalid-date')).rejects.toThrow(ValidationError);
+      await expect(service.getCopilotUsageForOrg('octodemo', '2024-01-01', 'invalid-date')).rejects.toThrow(ValidationError);
     });
 
     test('should validate pagination parameters', async () => {
-      await expect(service.getCopilotUsageForOrg('test-org', undefined, undefined, 0)).rejects.toThrow(ValidationError);
-      await expect(service.getCopilotUsageForOrg('test-org', undefined, undefined, 1, 101)).rejects.toThrow(ValidationError);
+      await expect(service.getCopilotUsageForOrg('octodemo', undefined, undefined, 0)).rejects.toThrow(ValidationError);
+      await expect(service.getCopilotUsageForOrg('octodemo', undefined, undefined, 1, 101)).rejects.toThrow(ValidationError);
     });
   });
 
@@ -96,10 +96,10 @@ describe('GitHubService', () => {
       const mockResponse = { data: { seats: [] } };
       mockOctokit.rest.copilot.listCopilotSeats.mockResolvedValue(mockResponse);
 
-      const result = await service.getCopilotSeatsForOrg('test-org');
+      const result = await service.getCopilotSeatsForOrg('octodemo');
       
       expect(mockOctokit.rest.copilot.listCopilotSeats).toHaveBeenCalledWith({
-        org: 'test-org',
+        org: 'octodemo',
         page: 1,
         per_page: 50
       });
@@ -112,18 +112,18 @@ describe('GitHubService', () => {
       const mockResponse = { data: { seats_created: 2 } };
       mockOctokit.rest.copilot.addCopilotSeatsForUsers.mockResolvedValue(mockResponse);
 
-      const result = await service.addCopilotSeatsForUsers('test-org', ['user1', 'user2']);
+      const result = await service.addCopilotSeatsForUsers('octodemo', ['user1', 'user2']);
       
       expect(mockOctokit.rest.copilot.addCopilotSeatsForUsers).toHaveBeenCalledWith({
-        org: 'test-org',
+        org: 'octodemo',
         selected_usernames: ['user1', 'user2']
       });
       expect(result).toBe(mockResponse);
     });
 
     test('should validate usernames', async () => {
-      await expect(service.addCopilotSeatsForUsers('test-org', [])).rejects.toThrow('selected_usernames must be a non-empty array');
-      await expect(service.addCopilotSeatsForUsers('test-org', ['invalid-username-that-is-too-long-for-github'])).rejects.toThrow(ValidationError);
+      await expect(service.addCopilotSeatsForUsers('octodemo', [])).rejects.toThrow('selected_usernames must be a non-empty array');
+      await expect(service.addCopilotSeatsForUsers('octodemo', ['invalid-username-that-is-too-long-for-github'])).rejects.toThrow(ValidationError);
     });
   });
 
@@ -132,10 +132,10 @@ describe('GitHubService', () => {
       const mockResponse = { data: { seats_cancelled: 1 } };
       mockOctokit.rest.copilot.cancelCopilotSeatAssignmentForUsers.mockResolvedValue(mockResponse);
 
-      const result = await service.removeCopilotSeatsForUsers('test-org', ['user1']);
+      const result = await service.removeCopilotSeatsForUsers('octodemo', ['user1']);
       
       expect(mockOctokit.rest.copilot.cancelCopilotSeatAssignmentForUsers).toHaveBeenCalledWith({
-        org: 'test-org',
+        org: 'octodemo',
         selected_usernames: ['user1']
       });
       expect(result).toBe(mockResponse);
@@ -147,17 +147,17 @@ describe('GitHubService', () => {
       const mockResponse = { data: { assignee: { login: 'user1' } } };
       mockOctokit.rest.copilot.getCopilotSeatDetailsForUser.mockResolvedValue(mockResponse);
 
-      const result = await service.getCopilotSeatDetails('test-org', 'user1');
+      const result = await service.getCopilotSeatDetails('octodemo', 'user1');
       
       expect(mockOctokit.rest.copilot.getCopilotSeatDetailsForUser).toHaveBeenCalledWith({
-        org: 'test-org',
+        org: 'octodemo',
         username: 'user1'
       });
       expect(result).toBe(mockResponse);
     });
 
     test('should validate username', async () => {
-      await expect(service.getCopilotSeatDetails('test-org', '')).rejects.toThrow(ValidationError);
+      await expect(service.getCopilotSeatDetails('octodemo', '')).rejects.toThrow(ValidationError);
     });
   });
 });

@@ -42,7 +42,7 @@ export class Logger {
       context
     };
 
-    console.log(JSON.stringify(entry, null, 2));
+    console.error(JSON.stringify(entry, null, 2));
   }
 
   error(message: string, context?: Record<string, any>): void {
