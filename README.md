@@ -2,7 +2,9 @@
 
 <div align="center">
 
-[![Docker](https://img.shields.io/badge/Docker-Available-blue?style=for-the-badge&logo=docker)](https://hub.docker.com/r/github/copilot-metrics-mcp-server)
+[![Docker](https://img.shields.io/badge/Docker-Available-blue?style=for-the-badge&logo=docker)](https://github.com/abirismyname/github-copilot-metrics-mcp-server/pkgs/container/github-copilot-metrics-mcp-server)
+[![CI/CD](https://img.shields.io/github/actions/workflow/status/abirismyname/github-copilot-metrics-mcp-server/ci.yml?style=for-the-badge&logo=github-actions&label=CI%2FCD)](https://github.com/abirismyname/github-copilot-metrics-mcp-server/actions)
+[![Security](https://img.shields.io/github/actions/workflow/status/abirismyname/github-copilot-metrics-mcp-server/codeql.yml?style=for-the-badge&logo=github&label=Security)](https://github.com/abirismyname/github-copilot-metrics-mcp-server/security)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](./LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 
@@ -25,7 +27,7 @@
 </a>
 
 <!-- Development Environment Buttons -->
-<a href="https://github.dev/github-copilot-metrics-mcp-server">
+<a href="https://github.dev/abirismyname/github-copilot-metrics-mcp-server">
   <img src="https://img.shields.io/badge/GitHub-Codespaces-blue?style=for-the-badge&logo=github" alt="Open in GitHub Codespaces">
 </a>
 
@@ -54,8 +56,8 @@ This server provides comprehensive tools for GitHub Copilot administration, incl
 # Install globally via npm
 npm install -g github-copilot-metrics-mcp-server
 
-# Or run with Docker
-docker run --env-file .env ghcr.io/github-copilot-metrics-mcp-server
+# Or run with Docker (Multi-platform: AMD64 + ARM64)
+docker run --env-file .env ghcr.io/abirismyname/github-copilot-metrics-mcp-server:latest
 ```
 
 ### VS Code Integration
@@ -92,27 +94,58 @@ npm install
 npm run build
 ```
 
-### Docker (Containerized)
+### Docker (Containerized) - Recommended
 
-#### Using Docker Compose (Recommended)
+#### Using Pre-built Image (GitHub Container Registry)
+
+The easiest way to run the server is using our pre-built multi-platform Docker image:
 
 ```bash
-git clone <your-repository-url>
-cd github-copilot-metrics-mcp
+# Pull and run the latest image
+docker run --name copilot-metrics \
+  --env-file .env \
+  -d \
+  ghcr.io/abirismyname/github-copilot-metrics-mcp-server:latest
+
+# Or run interactively
+docker run --rm -it \
+  --env-file .env \
+  ghcr.io/abirismyname/github-copilot-metrics-mcp-server:latest
+```
+
+#### Using Docker Compose (Recommended for development)
+
+```bash
+git clone https://github.com/abirismyname/github-copilot-metrics-mcp-server.git
+cd github-copilot-metrics-mcp-server
 cp .env.example .env
 # Edit .env with your GitHub token
 docker-compose up -d
 ```
 
-#### Using Docker directly
+#### Building Locally
 
 ```bash
+# Clone the repository
+git clone https://github.com/abirismyname/github-copilot-metrics-mcp-server.git
+cd github-copilot-metrics-mcp-server
+
 # Build the image
-docker build -t github-copilot-metrics-mcp .
+docker build -t copilot-metrics-local .
 
 # Run the container
-docker run --env-file .env github-copilot-metrics-mcp
+docker run --env-file .env copilot-metrics-local
 ```
+
+## 🚀 GitHub Actions Workflows
+
+This repository includes several automated workflows:
+
+- **🔄 CI/CD**: Automated testing on multiple Node.js versions
+- **🔒 Security**: CodeQL analysis and dependency scanning  
+- **📦 Docker**: Multi-platform image builds (AMD64 + ARM64)
+- **🤖 Auto-updates**: Dependabot for dependency management
+- **🏷️ Releases**: Automated release management
 
 ## Usage with Claude Desktop
 
@@ -172,17 +205,20 @@ If you're running the server locally, use the local path:
 
 ### For Docker Container
 
-If you're running the server in a Docker container, you can use the container directly:
+If you're running the server using our pre-built image:
 
 ```json
 {
   "mcpServers": {
     "github-copilot": {
       "command": "docker",
-      "args": ["run", "--rm", "--env-file", "/path/to/.env", "github-copilot-metrics-mcp"],
-      "env": {
-        "GITHUB_TOKEN": "your_github_token_here"
-      }
+      "args": [
+        "run", 
+        "--rm", 
+        "--env-file", 
+        "/path/to/.env", 
+        "ghcr.io/abirismyname/github-copilot-metrics-mcp-server:latest"
+      ]
     }
   }
 }
@@ -262,54 +298,72 @@ npm run lint    # Check for linting issues
 npm run format  # Format the code
 ```
 
-## Docker Deployment
+## 🐳 Docker Deployment
 
-### Building and Running with Docker
+### Multi-Platform Docker Image
 
-The server can be containerized using Docker for easy deployment and isolation.
+Our Docker image supports both **AMD64** and **ARM64** architectures, making it compatible with:
 
-#### Prerequisites
+- Intel/AMD processors
+- Apple Silicon Macs (M1/M2/M3)
+- ARM servers and cloud instances
 
-- Docker and Docker Compose installed
-- `.env` file with your GitHub credentials
-
-#### Quick Start with Docker Compose
-
-1. Clone the repository:
+### Quick Start with Pre-built Image
 
 ```bash
-git clone <your-repository-url>
-cd github-copilot-metrics-mcp-server
+# Pull and run the latest image
+docker run --name copilot-metrics \
+  -e GITHUB_TOKEN=your_token_here \
+  -d \
+  ghcr.io/abirismyname/github-copilot-metrics-mcp-server:latest
+
+# View logs
+docker logs copilot-metrics
+
+# Stop the container
+docker stop copilot-metrics && docker rm copilot-metrics
 ```
 
-2. Set up environment variables:
+### Using Environment File
+
+1. Create an environment file:
 
 ```bash
 cp .env.example .env
+# Edit .env with your GitHub credentials
+```
+
+1. Run with environment file:
+
+```bash
+docker run --env-file .env ghcr.io/abirismyname/github-copilot-metrics-mcp-server:latest
+```
+
+1. For development with Docker Compose:
+
+```bash
+git clone https://github.com/abirismyname/github-copilot-metrics-mcp-server.git
+cd github-copilot-metrics-mcp-server
+cp .env.example .env
 # Edit .env with your GitHub token
+docker-compose up -d
 ```
 
-3. Start the container:
+1. View logs and manage:
 
 ```bash
-npm run docker:up
+npm run docker:logs  # View logs
+npm run docker:down  # Stop containers
 ```
 
-4. View logs:
+### Available Docker Scripts
 
 ```bash
-npm run docker:logs
+npm run docker:build-ghcr-multi  # Build and push multi-platform image
+npm run docker:up                # Start with Docker Compose
+npm run docker:down              # Stop Docker Compose
+npm run docker:logs              # View container logs
 ```
-
-5. Stop the container:
-
-```bash
-npm run docker:down
-```
-
-#### Manual Docker Commands
-
-Build the image:
 
 ```bash
 npm run docker:build
@@ -502,20 +556,84 @@ LOG_LEVEL=warn   # Shows warnings and errors only
 LOG_LEVEL=error  # Shows errors only
 ```
 
-## Contributing
+## 🛠️ Development & Contributing
 
-To contribute to this project:
+### Development Setup
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/abirismyname/github-copilot-metrics-mcp-server.git
+   cd github-copilot-metrics-mcp-server
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment**:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your GitHub credentials
+   ```
+
+4. **Run in development mode**:
+   ```bash
+   npm run dev
+   ```
+
+### Quality Assurance
+
+Our repository includes automated workflows for maintaining code quality:
+
+- **🔄 CI/CD Pipeline**: Runs tests on Node.js 18, 20, and 22
+- **🔒 Security Scanning**: CodeQL analysis and dependency auditing
+- **📦 Docker Builds**: Multi-platform image creation (AMD64 + ARM64)
+- **🤖 Dependency Updates**: Automated Dependabot PRs
+- **🏷️ Release Management**: Automated versioning and changelog generation
+
+### Running Tests
 
 ```bash
-git clone <repository-url>
-cd github-copilot-metrics-mcp-server
-npm install
-npm run dev     # Start in development mode
-npm test        # Run tests
-npm run lint    # Check code quality
-npm run format  # Format code
+npm run test          # Run all tests
+npm run test:watch    # Run tests in watch mode
+npm run lint          # Check code quality
+npm run format        # Format code with Prettier
 ```
 
-## License
+### Contributing
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+1. **Fork the repository**
+2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
+3. **Make your changes** and add tests
+4. **Run the test suite**: `npm test`
+5. **Commit your changes**: `git commit -m 'Add amazing feature'`
+6. **Push to the branch**: `git push origin feature/amazing-feature`
+7. **Open a Pull Request**
+
+### Release Process
+
+Releases are automated through GitHub Actions:
+
+1. **Create a release** using the GitHub UI or:
+   ```bash
+   gh workflow run release.yml -f version=1.2.3
+   ```
+
+2. **The workflow will**:
+   - Run all tests and quality checks
+   - Update version in package.json
+   - Create a git tag
+   - Generate release notes
+   - Build and push Docker images
+   - Publish to npm (if configured)
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Built with [FastMCP](https://github.com/punkpeye/fastmcp) framework
+- Uses the [Octokit](https://github.com/octokit/octokit.js) library for GitHub API interactions
+- Docker multi-platform builds powered by GitHub Actions

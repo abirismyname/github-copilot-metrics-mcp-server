@@ -9,7 +9,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: github-copilot-metrics-mcp-server
+  IMAGE_NAME: abirismyname/github-copilot-metrics-mcp-server
 
 jobs:
   build-and-push:
@@ -53,5 +53,7 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+        provenance: false
+        sbom: false
         cache-from: type=gha
         cache-to: type=gha,mode=max
