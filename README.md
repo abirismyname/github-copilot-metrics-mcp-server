@@ -142,7 +142,7 @@ docker run --env-file .env copilot-metrics-local
 This repository includes several automated workflows:
 
 - **🔄 CI/CD**: Automated testing on multiple Node.js versions
-- **🔒 Security**: CodeQL analysis and dependency scanning  
+- **🔒 Security**: CodeQL analysis and dependency scanning
 - **📦 Docker**: Multi-platform image builds (AMD64 + ARM64)
 - **🤖 Auto-updates**: Dependabot for dependency management
 - **🏷️ Releases**: Automated release management
@@ -213,10 +213,10 @@ If you're running the server using our pre-built image:
     "github-copilot": {
       "command": "docker",
       "args": [
-        "run", 
-        "--rm", 
-        "--env-file", 
-        "/path/to/.env", 
+        "run",
+        "--rm",
+        "--env-file",
+        "/path/to/.env",
         "ghcr.io/abirismyname/github-copilot-metrics-mcp-server:latest"
       ]
     }
@@ -403,7 +403,7 @@ For production deployments, consider:
 Example production docker-compose.yml:
 
 ```yaml
-version: '3.8'
+version: "3.8"
 services:
   github-copilot-metrics-mcp-server:
     image: github-copilot-metrics-mcp-server:latest
@@ -434,7 +434,7 @@ secrets:
 ### Copilot Metrics
 
 - Get usage metrics for organizations
-- Get usage metrics for enterprises  
+- Get usage metrics for enterprises
 - List Copilot seats
 - Get seat details for specific users
 
@@ -495,7 +495,7 @@ RATE_LIMIT_WINDOW_MS=60000
 The server provides the following MCP tools:
 
 - `get_copilot_usage_org` - Get Copilot usage metrics for an organization
-- `get_copilot_usage_enterprise` - Get Copilot usage metrics for an enterprise  
+- `get_copilot_usage_enterprise` - Get Copilot usage metrics for an enterprise
 - `list_copilot_seats` - List all Copilot seats in an organization
 - `add_copilot_seats` - Add Copilot seats for users
 - `remove_copilot_seats` - Remove Copilot seats for users
@@ -508,7 +508,7 @@ Here are some example prompts you can use with this GitHub Copilot Metrics MCP s
 ### Getting Usage Metrics
 
 - "Show me the Copilot usage metrics for my organization for the last 30 days"
-- "Get the current Copilot seat utilization for the 'acme-corp' organization"  
+- "Get the current Copilot seat utilization for the 'acme-corp' organization"
 - "What are the usage trends for our enterprise Copilot deployment?"
 
 ### Managing User Seats
@@ -561,17 +561,20 @@ LOG_LEVEL=error  # Shows errors only
 ### Development Setup
 
 1. **Clone the repository**:
+
    ```bash
    git clone https://github.com/abirismyname/github-copilot-metrics-mcp-server.git
    cd github-copilot-metrics-mcp-server
    ```
 
 2. **Install dependencies**:
+
    ```bash
    npm install
    ```
 
 3. **Set up environment**:
+
    ```bash
    cp .env.example .env
    # Edit .env with your GitHub credentials
@@ -616,6 +619,7 @@ npm run format        # Format code with Prettier
 Releases are automated through GitHub Actions:
 
 1. **Create a release** using the GitHub UI or:
+
    ```bash
    gh workflow run release.yml -f version=1.2.3
    ```

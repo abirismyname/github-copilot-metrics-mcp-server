@@ -14,31 +14,31 @@ jobs:
       checks: read
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Run tests
-      run: |
-        npm run lint
-        npm run build
-        npm test
+      - name: Run tests
+        run: |
+          npm run lint
+          npm run build
+          npm test
 
-    - name: Auto-merge patch and minor updates
-      if: |
-        contains(github.event.pull_request.title, 'bump') && 
-        (contains(github.event.pull_request.title, 'patch') || 
-         contains(github.event.pull_request.title, 'minor'))
-      run: |
-        gh pr review ${{ github.event.pull_request.number }} --approve
-        gh pr merge ${{ github.event.pull_request.number }} --auto --squash
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Auto-merge patch and minor updates
+        if: |
+          contains(github.event.pull_request.title, 'bump') && 
+          (contains(github.event.pull_request.title, 'patch') || 
+           contains(github.event.pull_request.title, 'minor'))
+        run: |
+          gh pr review ${{ github.event.pull_request.number }} --approve
+          gh pr merge ${{ github.event.pull_request.number }} --auto --squash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

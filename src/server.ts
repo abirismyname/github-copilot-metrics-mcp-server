@@ -6,7 +6,11 @@ import { config } from "dotenv";
 import { GitHubService } from "./github-service.js";
 import { Logger } from "./logger.js";
 import { validateConfig } from "./config.js";
-import { ValidationError, GitHubAPIError, RateLimitError } from "./error-handling.js";
+import {
+  ValidationError,
+  GitHubAPIError,
+  RateLimitError,
+} from "./error-handling.js";
 
 // Load environment variables
 config();
@@ -29,7 +33,10 @@ const server = new FastMCP({
 });
 
 // Helper function to handle tool execution with proper error handling
-async function executeToolSafely<T extends {data: any}>(operation: () => Promise<T>, toolName: string): Promise<string> {
+async function executeToolSafely<T extends { data: any }>(
+  operation: () => Promise<T>,
+  toolName: string,
+): Promise<string> {
   try {
     logger.info(`Executing tool: ${toolName}`);
     const result = await operation();
@@ -38,31 +45,37 @@ async function executeToolSafely<T extends {data: any}>(operation: () => Promise
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error(`Tool execution failed: ${toolName}`, { error: errorMessage });
-    
+
     if (error instanceof ValidationError) {
       throw new Error(`Invalid input: ${error.message}`);
     }
-    
+
     if (error instanceof GitHubAPIError) {
       if (error.statusCode === 401) {
-        throw new Error('Authentication failed. Please check your GitHub token or app credentials.');
+        throw new Error(
+          "Authentication failed. Please check your GitHub token or app credentials.",
+        );
       }
       if (error.statusCode === 403) {
-        throw new Error('Access forbidden. Check your permissions for this operation.');
+        throw new Error(
+          "Access forbidden. Check your permissions for this operation.",
+        );
       }
       if (error.statusCode === 404) {
-        throw new Error('Resource not found. Please check the organization/user name.');
+        throw new Error(
+          "Resource not found. Please check the organization/user name.",
+        );
       }
       throw new Error(`GitHub API error: ${error.message}`);
     }
-    
+
     if (error instanceof RateLimitError) {
-      const retryMessage = error.retryAfter 
+      const retryMessage = error.retryAfter
         ? ` Please try again in ${error.retryAfter} seconds.`
-        : ' Please try again later.';
+        : " Please try again later.";
       throw new Error(`Rate limit exceeded.${retryMessage}`);
     }
-    
+
     throw new Error(`Unexpected error: ${errorMessage}`);
   }
 }
@@ -74,28 +87,52 @@ server.addTool({
     readOnlyHint: true,
     title: "Get Copilot Usage Metrics for Organization",
   },
-  description: "Retrieve GitHub Copilot usage metrics for an organization. Falls back to seat information if usage metrics are not available.",
+  description:
+    "Retrieve GitHub Copilot usage metrics for an organization. Falls back to seat information if usage metrics are not available.",
   execute: async (args) => {
     try {
       return await executeToolSafely(
-        () => githubService.getCopilotUsageForOrg(args.org, args.since, args.until, args.page, args.per_page),
-        'get_copilot_usage_org'
+        () =>
+          githubService.getCopilotUsageForOrg(
+            args.org,
+            args.since,
+            args.until,
+            args.page,
+            args.per_page,
+          ),
+        "get_copilot_usage_org",
       );
     } catch (error) {
       // If usage metrics fail with 404, try to get seat information instead
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      if (errorMessage.includes('404') || errorMessage.includes('Not Found')) {
-        logger.info("Usage metrics not available, falling back to seat information", { org: args.org });
-        const seatsData = await executeToolSafely(
-          () => githubService.getCopilotSeatsForOrg(args.org, args.page, args.per_page),
-          'get_copilot_seats_org_fallback'
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes("404") || errorMessage.includes("Not Found")) {
+        logger.info(
+          "Usage metrics not available, falling back to seat information",
+          { org: args.org },
         );
-        return JSON.stringify({
-          note: "Usage metrics not available for this organization. Showing seat information instead.",
-          organization: args.org,
-          seats_data: JSON.parse(seatsData),
-          requested_period: args.since && args.until ? `${args.since} to ${args.until}` : "Last 30 days (not available)"
-        }, null, 2);
+        const seatsData = await executeToolSafely(
+          () =>
+            githubService.getCopilotSeatsForOrg(
+              args.org,
+              args.page,
+              args.per_page,
+            ),
+          "get_copilot_seats_org_fallback",
+        );
+        return JSON.stringify(
+          {
+            note: "Usage metrics not available for this organization. Showing seat information instead.",
+            organization: args.org,
+            seats_data: JSON.parse(seatsData),
+            requested_period:
+              args.since && args.until
+                ? `${args.since} to ${args.until}`
+                : "Last 30 days (not available)",
+          },
+          null,
+          2,
+        );
       }
       throw error;
     }
@@ -106,7 +143,10 @@ server.addTool({
     since: z.string().optional().describe("Start date (YYYY-MM-DD format)"),
     until: z.string().optional().describe("End date (YYYY-MM-DD format)"),
     page: z.number().default(1).describe("Page number for pagination"),
-    per_page: z.number().default(50).describe("Number of results per page (max 100)"),
+    per_page: z
+      .number()
+      .default(50)
+      .describe("Number of results per page (max 100)"),
   }),
 });
 
@@ -119,8 +159,15 @@ server.addTool({
   description: "Retrieve GitHub Copilot usage metrics for an enterprise",
   execute: async (args) => {
     return executeToolSafely(
-      () => githubService.getCopilotUsageForEnterprise(args.enterprise, args.since, args.until, args.page, args.per_page),
-      'get_copilot_usage_enterprise'
+      () =>
+        githubService.getCopilotUsageForEnterprise(
+          args.enterprise,
+          args.since,
+          args.until,
+          args.page,
+          args.per_page,
+        ),
+      "get_copilot_usage_enterprise",
     );
   },
   name: "get_copilot_usage_enterprise",
@@ -129,7 +176,10 @@ server.addTool({
     since: z.string().optional().describe("Start date (YYYY-MM-DD format)"),
     until: z.string().optional().describe("End date (YYYY-MM-DD format)"),
     page: z.number().default(1).describe("Page number for pagination"),
-    per_page: z.number().default(50).describe("Number of results per page (max 100)"),
+    per_page: z
+      .number()
+      .default(50)
+      .describe("Number of results per page (max 100)"),
   }),
 });
 
@@ -142,15 +192,19 @@ server.addTool({
   description: "List all GitHub Copilot seats for an organization",
   execute: async (args) => {
     return executeToolSafely(
-      () => githubService.getCopilotSeatsForOrg(args.org, args.page, args.per_page),
-      'list_copilot_seats'
+      () =>
+        githubService.getCopilotSeatsForOrg(args.org, args.page, args.per_page),
+      "list_copilot_seats",
     );
   },
   name: "list_copilot_seats",
   parameters: z.object({
     org: z.string().describe("The organization name"),
     page: z.number().default(1).describe("Page number for pagination"),
-    per_page: z.number().default(50).describe("Number of results per page (max 100)"),
+    per_page: z
+      .number()
+      .default(50)
+      .describe("Number of results per page (max 100)"),
   }),
 });
 
@@ -161,17 +215,24 @@ server.addTool({
     readOnlyHint: false,
     title: "Add Copilot Seats for Users",
   },
-  description: "Add GitHub Copilot seats for specified users in an organization",
+  description:
+    "Add GitHub Copilot seats for specified users in an organization",
   execute: async (args) => {
     return executeToolSafely(
-      () => githubService.addCopilotSeatsForUsers(args.org, args.selected_usernames),
-      'add_copilot_seats'
+      () =>
+        githubService.addCopilotSeatsForUsers(
+          args.org,
+          args.selected_usernames,
+        ),
+      "add_copilot_seats",
     );
   },
   name: "add_copilot_seats",
   parameters: z.object({
     org: z.string().describe("The organization name"),
-    selected_usernames: z.array(z.string()).describe("Array of usernames to add Copilot seats for"),
+    selected_usernames: z
+      .array(z.string())
+      .describe("Array of usernames to add Copilot seats for"),
   }),
 });
 
@@ -181,17 +242,24 @@ server.addTool({
     readOnlyHint: false,
     title: "Remove Copilot Seats for Users",
   },
-  description: "Remove GitHub Copilot seats for specified users in an organization",
+  description:
+    "Remove GitHub Copilot seats for specified users in an organization",
   execute: async (args) => {
     return executeToolSafely(
-      () => githubService.removeCopilotSeatsForUsers(args.org, args.selected_usernames),
-      'remove_copilot_seats'
+      () =>
+        githubService.removeCopilotSeatsForUsers(
+          args.org,
+          args.selected_usernames,
+        ),
+      "remove_copilot_seats",
     );
   },
   name: "remove_copilot_seats",
   parameters: z.object({
     org: z.string().describe("The organization name"),
-    selected_usernames: z.array(z.string()).describe("Array of usernames to remove Copilot seats for"),
+    selected_usernames: z
+      .array(z.string())
+      .describe("Array of usernames to remove Copilot seats for"),
   }),
 });
 
@@ -205,7 +273,7 @@ server.addTool({
   execute: async (args) => {
     return executeToolSafely(
       () => githubService.getCopilotSeatDetails(args.org, args.username),
-      'get_copilot_seat_details'
+      "get_copilot_seat_details",
     );
   },
   name: "get_copilot_seat_details",

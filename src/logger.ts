@@ -1,8 +1,8 @@
 export enum LogLevel {
-  ERROR = 'error',
-  WARN = 'warn',
-  INFO = 'info',
-  DEBUG = 'debug'
+  ERROR = "error",
+  WARN = "warn",
+  INFO = "info",
+  DEBUG = "debug",
 }
 
 export interface LogEntry {
@@ -28,18 +28,27 @@ export class Logger {
   }
 
   private shouldLog(level: LogLevel): boolean {
-    const levels = [LogLevel.ERROR, LogLevel.WARN, LogLevel.INFO, LogLevel.DEBUG];
+    const levels = [
+      LogLevel.ERROR,
+      LogLevel.WARN,
+      LogLevel.INFO,
+      LogLevel.DEBUG,
+    ];
     return levels.indexOf(level) <= levels.indexOf(this.logLevel);
   }
 
-  private log(level: LogLevel, message: string, context?: Record<string, any>): void {
+  private log(
+    level: LogLevel,
+    message: string,
+    context?: Record<string, any>,
+  ): void {
     if (!this.shouldLog(level)) return;
 
     const entry: LogEntry = {
       level,
       message,
       timestamp: new Date(),
-      context
+      context,
     };
 
     console.error(JSON.stringify(entry, null, 2));

@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   github-copilot-metrics-mcp-server:
@@ -19,7 +19,7 @@ services:
     # For stdio-based MCP communication, you typically don't need port mapping
     # ports:
     #   - "3000:3000"
-    
+
     # Health check
     healthcheck:
       test: ["CMD", "node", "-e", "process.exit(0)"]
@@ -27,13 +27,13 @@ services:
       timeout: 10s
       retries: 3
       start_period: 5s
-    
+
     # Resource limits
     deploy:
       resources:
         limits:
           memory: 512M
-          cpus: '0.5'
+          cpus: "0.5"
         reservations:
           memory: 256M
-          cpus: '0.25'
+          cpus: "0.25"
