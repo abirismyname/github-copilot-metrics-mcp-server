@@ -3,15 +3,46 @@
 <div align="center">
 
 [![npm](https://img.shields.io/npm/v/github-copilot-metrics-mcp-server?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/github-copilot-metrics-mcp-server)
+[![Downloads](https://img.shields.io/npm/dm/github-copilot-metrics-mcp-server?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/github-copilot-metrics-mcp-server)
 [![Docker](https://img.shields.io/badge/Docker-Available-blue?style=for-the-badge&logo=docker)](https://hub.docker.com/r/github/copilot-metrics-mcp-server)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](./LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![GitHub Stars](https://img.shields.io/github/stars/your-org/github-copilot-metrics-mcp-server?style=for-the-badge&logo=github)](https://github.com/your-org/github-copilot-metrics-mcp-server)
+[![GitHub Issues](https://img.shields.io/github/issues/your-org/github-copilot-metrics-mcp-server?style=for-the-badge&logo=github)](https://github.com/your-org/github-copilot-metrics-mcp-server/issues)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/your-org/github-copilot-metrics-mcp-server/main.yaml?style=for-the-badge&logo=github-actions)](https://github.com/your-org/github-copilot-metrics-mcp-server/actions)
 
 <a href="https://marketplace.visualstudio.com/items?itemName=github.copilot-metrics-mcp-server">
   <img src="https://img.shields.io/badge/VS%20Code-Install%20Server-blue?style=for-the-badge&logo=visual-studio-code" alt="Install for VS Code">
 </a>
 <a href="https://marketplace.visualstudio.com/items?itemName=github.copilot-metrics-mcp-server">
   <img src="https://img.shields.io/badge/VS%20Code%20Insiders-Install%20Server-green?style=for-the-badge&logo=visual-studio-code" alt="Install for VS Code Insiders">
+</a>
+
+<!-- One-Click Deploy Buttons -->
+<a href="https://railway.app/template/github-copilot-metrics-mcp-server">
+  <img src="https://railway.app/button.svg" alt="Deploy on Railway" height="32">
+</a>
+<a href="https://render.com/deploy?repo=https://github.com/your-org/github-copilot-metrics-mcp-server">
+  <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render" height="32">
+</a>
+<a href="https://fly.io/deploy?repo=https://github.com/your-org/github-copilot-metrics-mcp-server">
+  <img src="https://fly.io/static/images/fly-io-launch.svg" alt="Deploy on Fly.io" height="32">
+</a>
+
+<!-- Development Environment Buttons -->
+<a href="https://github.dev/your-org/github-copilot-metrics-mcp-server">
+  <img src="https://img.shields.io/badge/GitHub-Codespaces-blue?style=for-the-badge&logo=github" alt="Open in GitHub Codespaces">
+</a>
+
+<!-- Quick Actions -->
+<a href="https://github.com/your-org/github-copilot-metrics-mcp-server/fork">
+  <img src="https://img.shields.io/badge/Fork-Repository-orange?style=for-the-badge&logo=github" alt="Fork Repository">
+</a>
+<a href="https://github.com/your-org/github-copilot-metrics-mcp-server/issues/new?template=bug_report.md">
+  <img src="https://img.shields.io/badge/Report-Bug-red?style=for-the-badge&logo=github" alt="Report Bug">
+</a>
+<a href="https://github.com/your-org/github-copilot-metrics-mcp-server/issues/new?template=feature_request.md">
+  <img src="https://img.shields.io/badge/Request-Feature-brightgreen?style=for-the-badge&logo=github" alt="Request Feature">
 </a>
 
 </div>
