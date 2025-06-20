@@ -1,32 +1,35 @@
-# FastMCP Boilerplate
+# GitHub Copilot MCP Server
 
-A boilerplate for [FastMCP](https://github.com/punkpeye/fastmcp).
+A Model Context Protocol (MCP) server for managing GitHub Copilot metrics and user management using the [FastMCP](https://github.com/punkpeye/fastmcp) framework.
 
-This boilerplate is a good starting point for building an MCP server. It includes a basic setup for testing, linting, formatting, and publishing to NPM.
+This server provides comprehensive tools for GitHub Copilot administration, including usage metrics, seat management, and reporting capabilities with robust error handling and logging.
 
-## Development
+## Quick Start
 
 To get started, clone the repository and install the dependencies.
 
 ```bash
-git clone https://github.com/punkpeye/fastmcp-boilerplate.git
-cd fastmcp-boilerplate
+git clone <your-repository-url>
+cd github-copilot-mcp-server
 npm install
-npm run dev
 ```
 
-> [!NOTE]
-> If you are starting a new project, you may want to fork [fastmcp-boilerplate](https://github.com/punkpeye/fastmcp-boilerplate) and start from there.
-
-### Start the server
-
-If you simply want to start the server, you can use the `start` script.
+Set up your GitHub authentication by creating a `.env` file:
 
 ```bash
-npm run start
+GITHUB_TOKEN=your_github_personal_access_token
 ```
 
-However, you can also interact with the server using the `dev` script.
+Then start the server:
+
+```bash
+npm run build
+npm start
+```
+
+### Development
+
+If you want to run the server in development mode:
 
 ```bash
 npm run dev
@@ -36,111 +39,164 @@ This will start the server and allow you to interact with it using CLI.
 
 ### Testing
 
-A good MCP server should have tests. However, you don't need to test the MCP server itself, but rather the tools you implement.
+Run the comprehensive test suite to ensure everything is working correctly:
 
 ```bash
 npm run test
 ```
 
-In the case of this boilerplate, we only test the implementation of the `add` tool.
+The tests cover GitHub service functionality, error handling, validation, and API operations.
 
-### Linting
+### Linting and Formatting
 
-Having a good linting setup reduces the friction for other developers to contribute to your project.
-
-```bash
-npm run lint
-```
-
-This boilerplate uses [Prettier](https://prettier.io/), [ESLint](https://eslint.org/) and [TypeScript ESLint](https://typescript-eslint.io/) to lint the code.
-
-### Formatting
-
-Use `npm run format` to format the code.
+This project uses [Prettier](https://prettier.io/), [ESLint](https://eslint.org/) and [TypeScript ESLint](https://typescript-eslint.io/) for code quality.
 
 ```bash
-npm run format
+npm run lint    # Check for linting issues
+npm run format  # Format the code
 ```
-
-### GitHub Actions
-
-This repository has a GitHub Actions workflow that runs linting, formatting, tests, and publishes package updates to NPM using [semantic-release](https://semantic-release.gitbook.io/semantic-release/).
-
-In order to use this workflow, you need to:
-
-1. Add `NPM_TOKEN` to the repository secrets
-   1. [Create a new automation token](https://www.npmjs.com/settings/punkpeye/tokens/new)
-   2. Add token as `NPM_TOKEN` environment secret (Settings → Secrets and Variables → Actions → "Manage environment secrets" → "release" → Add environment secret)
-1. Grant write access to the workflow (Settings → Actions → General → Workflow permissions → "Read and write permissions")
-
-# GitHub Copilot MCP Server
-
-A Model Context Protocol (MCP) server for managing GitHub Copilot metrics and user management using the FastMCP framework.
 
 ## Features
 
 ### Copilot Metrics
+
 - Get usage metrics for organizations
-- Get usage metrics for enterprises
+- Get usage metrics for enterprises  
 - List Copilot seats
 - Get seat details for specific users
 
 ### User Management
+
 - Add Copilot seats for users
 - Remove Copilot seats for users
 
-## Setup
+### Advanced Features
 
-1. Install dependencies:
+- **Robust Error Handling**: Comprehensive error handling with retry logic and meaningful error messages
+- **Input Validation**: Validates all inputs including organization names, usernames, and date formats
+- **Structured Logging**: Configurable logging levels (error, warn, info, debug) for better observability
+- **Configuration Management**: Environment variable validation and type-safe configuration
+- **Authentication Flexibility**: Supports both GitHub Personal Access Tokens and GitHub App authentication
+
+## Configuration
+
+Create a `.env` file in the root directory with the following options:
+
 ```bash
-npm install
-```
-
-2. Set up authentication by creating a `.env` file:
-
-```bash
+# GitHub Authentication (required - choose one method)
 GITHUB_TOKEN=your_github_personal_access_token
+
+# OR use GitHub App authentication
+# GITHUB_APP_ID=your_app_id
+# GITHUB_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nyour_private_key\n-----END PRIVATE KEY-----"
+# GITHUB_INSTALLATION_ID=your_installation_id
+
+# Server Configuration (optional)
+LOG_LEVEL=info              # error, warn, info, debug
+API_TIMEOUT=30000           # API request timeout in milliseconds
+CACHE_TTL=300              # Cache time-to-live in seconds
+
+# Rate Limiting (optional)
+RATE_LIMIT_ENABLED=true
+RATE_LIMIT_MAX_REQUESTS=100
+RATE_LIMIT_WINDOW_MS=60000
 ```
 
-3. Build and run:
-```bash
-npm run build
-npm start
-```
+### Authentication Setup
 
-## Development
+#### Personal Access Token (Recommended for getting started)
 
-```bash
-npm run dev    # Run in development mode
-npm test       # Run tests
-npm run build  # Build for production
-```
+1. Go to GitHub Settings > Developer settings > Personal access tokens
+2. Generate a new token with `copilot` scope
+3. Add it to your `.env` file as `GITHUB_TOKEN`
+
+#### GitHub App (Recommended for production)
+
+1. Create a GitHub App with Copilot permissions
+2. Generate a private key
+3. Install the app on your organization
+4. Add the app credentials to your `.env` file
+
+## Available Tools
+
+The server provides the following MCP tools:
+
+- `get_copilot_usage_org` - Get Copilot usage metrics for an organization
+- `get_copilot_usage_enterprise` - Get Copilot usage metrics for an enterprise  
+- `list_copilot_seats` - List all Copilot seats in an organization
+- `add_copilot_seats` - Add Copilot seats for users
+- `remove_copilot_seats` - Remove Copilot seats for users
+- `get_copilot_seat_details` - Get seat details for a specific user
 
 ## Examples
 
 Here are some example prompts you can use with this GitHub Copilot MCP server:
 
 ### Getting Usage Metrics
+
 - "Show me the Copilot usage metrics for my organization for the last 30 days"
-- "Get the current Copilot seat utilization for the 'acme-corp' organization"
+- "Get the current Copilot seat utilization for the 'acme-corp' organization"  
 - "What are the usage trends for our enterprise Copilot deployment?"
 
 ### Managing User Seats
+
 - "Add Copilot seats for users: john.doe, jane.smith, and bob.wilson"
 - "Remove Copilot access for the user 'former-employee'"
 - "Show me the details of john.doe's Copilot seat"
 
 ### Generating Reports
+
 - "Analyze our Copilot usage data and provide recommendations for optimization"
 - "Create a summary report of our Copilot metrics for the executive team"
 - "Compare this month's usage with last month and highlight key changes"
 
 ### Bulk Operations
+
 - "List all users with Copilot seats in our organization"
 - "Add Copilot seats for all members of the 'engineering' team"
 - "Show me which users haven't used Copilot in the last 30 days"
 
 ### Enterprise Management
+
 - "Get enterprise-wide Copilot usage metrics for our organization"
 - "Show me seat utilization across all organizations in our enterprise"
 - "Generate a cost analysis report for our Copilot deployment"
+
+## Error Handling
+
+The server includes comprehensive error handling for common scenarios:
+
+- **Invalid Credentials**: Clear messages for authentication failures
+- **Rate Limiting**: Automatic retry with exponential backoff
+- **Validation Errors**: Detailed feedback for invalid inputs
+- **Network Issues**: Retry logic for transient failures
+- **Resource Not Found**: Helpful suggestions for missing resources
+
+## Logging
+
+The server provides structured logging with configurable levels:
+
+```bash
+LOG_LEVEL=debug  # Shows all operations and API calls
+LOG_LEVEL=info   # Shows major operations (default)
+LOG_LEVEL=warn   # Shows warnings and errors only
+LOG_LEVEL=error  # Shows errors only
+```
+
+## Contributing
+
+To contribute to this project:
+
+```bash
+git clone <repository-url>
+cd github-copilot-mcp-server
+npm install
+npm run dev     # Start in development mode
+npm test        # Run tests
+npm run lint    # Check code quality
+npm run format  # Format code
+```
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
