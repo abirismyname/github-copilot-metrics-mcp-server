@@ -129,9 +129,12 @@ export function validateUsername(username: string): void {
     );
   }
 
-  if (!/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$/.test(username)) {
+  const standardGithubRegex = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/;
+  const idpGithubRegex = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?_[a-zA-Z0-9]+$/;
+
+  if (!standardGithubRegex.test(username) && !idpGithubRegex.test(username)) {
     throw new ValidationError(
-      "Username contains invalid characters",
+      "Username contains invalid characters or does not follow allowed patterns (standard or IdP with _shortname)",
       "username",
     );
   }
