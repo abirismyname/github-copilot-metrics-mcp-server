@@ -12,6 +12,8 @@
     "serve": "node dist/server.js",
     "lint": "prettier --check . && eslint . && tsc --noEmit",
     "test": "vitest run",
+    "test:performance": "vitest run src/performance.test.ts --reporter=verbose",
+    "test:performance:watch": "vitest src/performance.test.ts",
     "format": "prettier --write . && eslint --fix .",
     "docker:build": "docker build -t github-copilot-metrics-mcp-server .",
     "docker:build-ghcr": "docker build --platform linux/amd64 -t ghcr.io/abirismyname/github-copilot-metrics-mcp-server:latest .",
