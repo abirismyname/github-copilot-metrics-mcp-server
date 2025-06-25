@@ -41,8 +41,8 @@
   "dependencies": {
     "@jest/globals": "^30.0.2",
     "@octokit/auth-app": "^8.0.1",
-    "@octokit/rest": "^20.1.2",
-    "dotenv": "^16.3.1",
+    "@octokit/rest": "^22.0.0",
+    "dotenv": "^16.5.0",
     "fastmcp": "latest",
     "zod": "latest"
   },
@@ -65,8 +65,8 @@
     "eslint-plugin-perfectionist": "^4.15.0",
     "jiti": "^2.4.2",
     "prettier": "^3.6.1",
-    "semantic-release": "^24.2.3",
-    "tsx": "^4.19.4",
+    "semantic-release": "^24.2.5",
+    "tsx": "^4.20.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.34.1",
     "vitest": "^3.2.4"
