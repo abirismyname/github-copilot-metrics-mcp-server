@@ -203,4 +203,48 @@ describe("GitHubService", () => {
       ).rejects.toThrow(ValidationError);
     });
   });
+  
+  test("should accept valid username with dash", async () => {
+    const mockResponse = {data : {assignee: { login : "test-user" } } };
+    mockOctokit.rest.copilot.getCopilotSeatDetailsForUser.mockResolvedValue(
+      mockResponse,
+    );
+    await expect(
+      service.getCopilotSeatDetails("test-org","test-user")
+    ).resolves.toBe(mockResponse);
+  });
+
+  test("should not accept valid username with underscore before the end", async () => {
+    const mockResponse = {data : {assignee: { login : "test_my-user" } } };
+    mockOctokit.rest.copilot.getCopilotSeatDetailsForUser.mockResolvedValue(
+      mockResponse,
+    );
+    await expect(
+      service.getCopilotSeatDetails("test-org","test_my-user")
+    ).rejects.toThrow(ValidationError);
+  
+  });
+
+  test("should accept valid username with underscore before the end", async () => {
+    const mockResponse = {data : {assignee: { login : "test-my_idp" } } };
+    mockOctokit.rest.copilot.getCopilotSeatDetailsForUser.mockResolvedValue(
+      mockResponse,
+    );
+    await expect(
+      service.getCopilotSeatDetails("test-org","test-my_idp")
+    ).resolves.toBe(mockResponse);
+  });
+
+  test("should accept valid username with underscore before the end", async () => {
+    const mockResponse = {data : {assignee: { login : "username_idp" } } };
+    mockOctokit.rest.copilot.getCopilotSeatDetailsForUser.mockResolvedValue(
+      mockResponse,
+    );
+    await expect(
+      service.getCopilotSeatDetails("test-org","username_idp")
+    ).resolves.toBe(mockResponse);
+  });
+
 });
+
+
