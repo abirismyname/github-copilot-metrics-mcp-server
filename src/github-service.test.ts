@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
+import { ValidationError } from "./error-handling.js";
 import { GitHubService } from "./github-service.js";
 
 // Mock the dependencies

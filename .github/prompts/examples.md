@@ -7,7 +7,10 @@ description: "Example API requests and responses for Copilot Metrics MCP Server"
 ## Get Copilot Metrics for an Organization
 
 Request:
+
+```http
 GET /orgs/example-org/copilot/billing/metrics
+```
 
 Response:
 
@@ -23,7 +26,10 @@ Response:
 ## Get Copilot Seats for an Organization
 
 Request:
+
+```http
 GET /orgs/example-org/copilot/billing/seats
+```
 
 Response:
 
