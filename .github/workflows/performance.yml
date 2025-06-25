@@ -52,18 +52,18 @@ jobs:
           script: |
             const perfSummary = process.env.PERF_SUMMARY || 'No performance metrics available';
             const body = `## 🚀 Performance Benchmark Results
-            
+
             ### Performance Metrics:
             \`\`\`
             ${perfSummary}
             \`\`\`
-            
+
             ### Test Status: 
             ✅ Performance tests completed successfully!
-            
+
             > These metrics help ensure the GitHub Copilot Metrics MCP Server maintains good performance characteristics.
             `;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
