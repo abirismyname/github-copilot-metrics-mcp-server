@@ -62,16 +62,32 @@ docker run --env-file .env ghcr.io/abirismyname/github-copilot-metrics-mcp-serve
 
 ### VS Code Integration
 
-Add to your Claude Desktop config:
+Add to your mcp.json config
 
 ```json
 {
-  "mcpServers": {
-    "github-copilot": {
-      "command": "github-copilot-metrics-mcp-server",
-      "env": { "GITHUB_TOKEN": "your_token_here" }
+    "inputs": [
+      {
+        "type": "promptString",
+        "id": "github_token",
+        "description": "GitHub Personal Access Token",
+        "password": true
+      }
+    ],
+    "servers": {
+        "github-copilot": {
+            "command": "docker",
+            "args": [
+                "run",
+                "-i",
+                "--rm",
+                "-e",
+                "GITHUB_TOKEN",
+                "ghcr.io/abirismyname/github-copilot-metrics-mcp-server"
+            ],  
+            "env": { "GITHUB_TOKEN": "${input:github_token}" }
     }
-  }
+    }
 }
 ```
 
