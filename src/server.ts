@@ -1,16 +1,17 @@
 #!/usr/bin/env node
 
+import { config } from "dotenv";
 import { FastMCP } from "fastmcp";
 import { z } from "zod";
-import { config } from "dotenv";
-import { GitHubService } from "./github-service.js";
-import { Logger } from "./logger.js";
+
 import { validateConfig } from "./config.js";
 import {
-  ValidationError,
   GitHubAPIError,
   RateLimitError,
+  ValidationError,
 } from "./error-handling.js";
+import { GitHubService } from "./github-service.js";
+import { Logger } from "./logger.js";
 
 // Load environment variables
 config();
@@ -21,10 +22,10 @@ const logger = Logger.getInstance();
 const appConfig = validateConfig();
 
 const githubService = new GitHubService({
-  token: appConfig.GITHUB_TOKEN,
   appId: appConfig.GITHUB_APP_ID,
-  privateKey: appConfig.GITHUB_PRIVATE_KEY,
   installationId: appConfig.GITHUB_INSTALLATION_ID,
+  privateKey: appConfig.GITHUB_PRIVATE_KEY,
+  token: appConfig.GITHUB_TOKEN,
 });
 
 const server = new FastMCP({
@@ -33,6 +34,7 @@ const server = new FastMCP({
 });
 
 // Helper function to handle tool execution with proper error handling
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function executeToolSafely<T extends { data: any }>(
   operation: () => Promise<T>,
   toolName: string,
@@ -124,11 +126,11 @@ server.addTool({
           {
             note: "Usage metrics not available for this organization. Showing seat information instead.",
             organization: args.org,
-            seats_data: JSON.parse(seatsData),
             requested_period:
               args.since && args.until
                 ? `${args.since} to ${args.until}`
                 : "Last 30 days (not available)",
+            seats_data: JSON.parse(seatsData),
           },
           null,
           2,
@@ -140,13 +142,13 @@ server.addTool({
   name: "get_copilot_usage_org",
   parameters: z.object({
     org: z.string().describe("The organization name"),
-    since: z.string().optional().describe("Start date (YYYY-MM-DD format)"),
-    until: z.string().optional().describe("End date (YYYY-MM-DD format)"),
     page: z.number().default(1).describe("Page number for pagination"),
     per_page: z
       .number()
       .default(50)
       .describe("Number of results per page (max 100)"),
+    since: z.string().optional().describe("Start date (YYYY-MM-DD format)"),
+    until: z.string().optional().describe("End date (YYYY-MM-DD format)"),
   }),
 });
 
@@ -173,13 +175,13 @@ server.addTool({
   name: "get_copilot_usage_enterprise",
   parameters: z.object({
     enterprise: z.string().describe("The enterprise slug"),
-    since: z.string().optional().describe("Start date (YYYY-MM-DD format)"),
-    until: z.string().optional().describe("End date (YYYY-MM-DD format)"),
     page: z.number().default(1).describe("Page number for pagination"),
     per_page: z
       .number()
       .default(50)
       .describe("Number of results per page (max 100)"),
+    since: z.string().optional().describe("Start date (YYYY-MM-DD format)"),
+    until: z.string().optional().describe("End date (YYYY-MM-DD format)"),
   }),
 });
 

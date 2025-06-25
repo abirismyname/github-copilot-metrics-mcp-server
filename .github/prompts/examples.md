@@ -10,6 +10,7 @@ Request:
 GET /orgs/example-org/copilot/billing/metrics
 
 Response:
+
 ```json
 {
   "total_seats": 10,
@@ -25,6 +26,7 @@ Request:
 GET /orgs/example-org/copilot/billing/seats
 
 Response:
+
 ```json
 {
   "seats": [

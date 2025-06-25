@@ -1,16 +1,16 @@
-import { describe, test, expect, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
+
 import { GitHubService } from "./github-service.js";
-import { ValidationError, GitHubAPIError } from "./error-handling.js";
 
 // Mock the dependencies
 const mockOctokit = {
   rest: {
     copilot: {
-      copilotMetricsForOrganization: vi.fn(),
-      listCopilotSeats: vi.fn(),
       addCopilotSeatsForUsers: vi.fn(),
       cancelCopilotSeatAssignmentForUsers: vi.fn(),
+      copilotMetricsForOrganization: vi.fn(),
       getCopilotSeatDetailsForUser: vi.fn(),
+      listCopilotSeats: vi.fn(),
     },
   },
 };
@@ -22,10 +22,10 @@ vi.mock("@octokit/rest", () => ({
 vi.mock("./logger.js", () => ({
   Logger: {
     getInstance: () => ({
-      info: vi.fn(),
-      error: vi.fn(),
-      warn: vi.fn(),
       debug: vi.fn(),
+      error: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
     }),
   },
 }));
@@ -53,8 +53,8 @@ describe("GitHubService", () => {
     test("should initialize with GitHub App credentials", () => {
       const appService = new GitHubService({
         appId: "test-app-id",
-        privateKey: "test-private-key",
         installationId: "test-installation-id",
+        privateKey: "test-private-key",
       });
       expect(appService).toBeInstanceOf(GitHubService);
     });
@@ -69,12 +69,14 @@ describe("GitHubService", () => {
 
       const result = await service.getCopilotUsageForOrg("test-org");
 
-      expect(mockOctokit.rest.copilot.copilotMetricsForOrganization).toHaveBeenCalledWith({
+      expect(
+        mockOctokit.rest.copilot.copilotMetricsForOrganization,
+      ).toHaveBeenCalledWith({
         org: "test-org",
-        since: undefined,
-        until: undefined,
         page: 1,
         per_page: 50,
+        since: undefined,
+        until: undefined,
       });
       expect(result).toBe(mockResponse);
     });
@@ -203,48 +205,44 @@ describe("GitHubService", () => {
       ).rejects.toThrow(ValidationError);
     });
   });
-  
+
   test("should accept valid username with dash", async () => {
-    const mockResponse = {data : {assignee: { login : "test-user" } } };
+    const mockResponse = { data: { assignee: { login: "test-user" } } };
     mockOctokit.rest.copilot.getCopilotSeatDetailsForUser.mockResolvedValue(
       mockResponse,
     );
     await expect(
-      service.getCopilotSeatDetails("test-org","test-user")
+      service.getCopilotSeatDetails("test-org", "test-user"),
     ).resolves.toBe(mockResponse);
   });
 
   test("should not accept valid username with underscore before the end", async () => {
-    const mockResponse = {data : {assignee: { login : "test_my-user" } } };
+    const mockResponse = { data: { assignee: { login: "test_my-user" } } };
     mockOctokit.rest.copilot.getCopilotSeatDetailsForUser.mockResolvedValue(
       mockResponse,
     );
     await expect(
-      service.getCopilotSeatDetails("test-org","test_my-user")
+      service.getCopilotSeatDetails("test-org", "test_my-user"),
     ).rejects.toThrow(ValidationError);
-  
   });
 
   test("should accept valid username with underscore before the end", async () => {
-    const mockResponse = {data : {assignee: { login : "test-my_idp" } } };
+    const mockResponse = { data: { assignee: { login: "test-my_idp" } } };
     mockOctokit.rest.copilot.getCopilotSeatDetailsForUser.mockResolvedValue(
       mockResponse,
     );
     await expect(
-      service.getCopilotSeatDetails("test-org","test-my_idp")
+      service.getCopilotSeatDetails("test-org", "test-my_idp"),
     ).resolves.toBe(mockResponse);
   });
 
   test("should accept valid username with underscore before the end", async () => {
-    const mockResponse = {data : {assignee: { login : "username_idp" } } };
+    const mockResponse = { data: { assignee: { login: "username_idp" } } };
     mockOctokit.rest.copilot.getCopilotSeatDetailsForUser.mockResolvedValue(
       mockResponse,
     );
     await expect(
-      service.getCopilotSeatDetails("test-org","username_idp")
+      service.getCopilotSeatDetails("test-org", "username_idp"),
     ).resolves.toBe(mockResponse);
   });
-
 });
-
-

@@ -1,18 +1,11 @@
 import { z } from "zod";
+
 import { Logger } from "./logger.js";
 
 const logger = Logger.getInstance();
 
 export const ConfigSchema = z
   .object({
-    // GitHub Authentication
-    GITHUB_TOKEN: z.string().optional(),
-    GITHUB_APP_ID: z.string().optional(),
-    GITHUB_PRIVATE_KEY: z.string().optional(),
-    GITHUB_INSTALLATION_ID: z.string().optional(),
-
-    // Server Configuration
-    LOG_LEVEL: z.enum(["error", "warn", "info", "debug"]).default("info"),
     API_TIMEOUT: z
       .string()
       .transform((val) => parseInt(val))
@@ -21,6 +14,14 @@ export const ConfigSchema = z
       .string()
       .transform((val) => parseInt(val))
       .default("300"), // 5 minutes
+    GITHUB_APP_ID: z.string().optional(),
+    GITHUB_INSTALLATION_ID: z.string().optional(),
+
+    GITHUB_PRIVATE_KEY: z.string().optional(),
+    // GitHub Authentication
+    GITHUB_TOKEN: z.string().optional(),
+    // Server Configuration
+    LOG_LEVEL: z.enum(["error", "warn", "info", "debug"]).default("info"),
 
     // Rate Limiting
     RATE_LIMIT_ENABLED: z
@@ -55,6 +56,14 @@ export const ConfigSchema = z
 
 export type Config = z.infer<typeof ConfigSchema>;
 
+export function getRequiredEnvVar(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Required environment variable ${name} is not set`);
+  }
+  return value;
+}
+
 export function validateConfig(): Config {
   try {
     logger.info("Validating configuration...");
@@ -62,15 +71,15 @@ export function validateConfig(): Config {
     const config = ConfigSchema.parse(process.env);
 
     logger.info("Configuration validated successfully", {
-      hasToken: !!config.GITHUB_TOKEN,
+      apiTimeout: config.API_TIMEOUT,
+      cacheTtl: config.CACHE_TTL,
       hasAppCreds: !!(
         config.GITHUB_APP_ID &&
         config.GITHUB_PRIVATE_KEY &&
         config.GITHUB_INSTALLATION_ID
       ),
+      hasToken: !!config.GITHUB_TOKEN,
       logLevel: config.LOG_LEVEL,
-      apiTimeout: config.API_TIMEOUT,
-      cacheTtl: config.CACHE_TTL,
     });
 
     return config;
@@ -79,12 +88,4 @@ export function validateConfig(): Config {
     logger.error("Configuration validation failed", { error: errorMessage });
     throw new Error(`Configuration validation failed: ${errorMessage}`);
   }
-}
-
-export function getRequiredEnvVar(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`Required environment variable ${name} is not set`);
-  }
-  return value;
 }
