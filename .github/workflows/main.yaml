@@ -37,6 +37,11 @@ jobs:
         run: npm run test
       - name: Build
         run: npm run build
+      - name: Remove local conflicting tag
+        run: |
+          git fetch --all --tags
+          git tag -d v1.0.0 || true
+          git fetch --tags --force
       - name: Release
         run: npx semantic-release
         env:
