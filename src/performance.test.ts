@@ -1,16 +1,17 @@
 import { performance } from "perf_hooks";
-import { describe, test, expect, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
+
 import { GitHubService } from "./github-service.js";
 
 // Mock the dependencies for performance testing
 const mockOctokit = {
   rest: {
     copilot: {
-      copilotMetricsForOrganization: vi.fn(),
-      listCopilotSeats: vi.fn(),
       addCopilotSeatsForUsers: vi.fn(),
       cancelCopilotSeatAssignmentForUsers: vi.fn(),
+      copilotMetricsForOrganization: vi.fn(),
       getCopilotSeatDetailsForUser: vi.fn(),
+      listCopilotSeats: vi.fn(),
     },
   },
 };
@@ -141,10 +142,10 @@ describe("GitHubService Performance Tests", () => {
 
   test("validation functions should be fast", async () => {
     const {
-      validateOrganizationName,
-      validateUsername,
       validateDateString,
+      validateOrganizationName,
       validatePaginationParams,
+      validateUsername,
     } = await import("./error-handling.js");
 
     const start = performance.now();
