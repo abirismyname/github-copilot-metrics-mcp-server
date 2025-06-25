@@ -18,15 +18,15 @@ jobs:
       id-token: write
     steps:
       - name: setup repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
         with:
           fetch-depth: 0
       - name: setup node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ matrix.node }}
       - name: Setup NodeJS ${{ matrix.node }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ matrix.node }}
       - name: Install dependencies
