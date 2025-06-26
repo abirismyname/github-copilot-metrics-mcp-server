@@ -2,6 +2,7 @@
 
 import { config } from "dotenv";
 import { FastMCP } from "fastmcp";
+import { existsSync, readFileSync } from "fs";
 import { z } from "zod";
 
 import { validateConfig } from "./config.js";
@@ -13,7 +14,6 @@ import {
 import { GitHubService } from "./github-service.js";
 import { Logger } from "./logger.js";
 import { MCPClientDetector } from "./mcp-client-detector.js";
-import { readFileSync, existsSync } from "fs";
 
 // Load environment variables
 config();
@@ -28,11 +28,11 @@ const clientInfo = clientDetector.getClientInfo();
 const dockerInfo = getDockerInfo();
 
 // Log MCP client and Docker information at startup
-logger.info('Server startup information:', { 
+logger.info("Server startup information:", {
   clientInfo,
   dockerInfo,
   nodeVersion: process.version,
-  platform: process.platform
+  platform: process.platform,
 });
 
 // Validate configuration on startup
@@ -49,6 +49,26 @@ const server = new FastMCP({
   name: "GitHub Copilot Metrics Manager",
   version: "1.0.0",
 });
+
+// Helper function to add default date range if missing
+function addDefaultDateRange(args: {
+  org: string;
+  page?: number;
+  per_page?: number;
+  since?: string;
+  until?: string;
+}): typeof args {
+  // If no date range provided, use last 30 days
+  if (!args.since && !args.until) {
+    const suggestions = generateDateRangeSuggestions();
+    return {
+      ...args,
+      since: suggestions.last30Days.since,
+      until: suggestions.last30Days.until,
+    };
+  }
+  return args;
+}
 
 // Helper function to provide user-friendly guidance for missing date ranges
 function createDateRangeGuidance(org: string): string {
@@ -165,57 +185,29 @@ function generateDateRangeSuggestions(): {
   };
 }
 
-// Helper function to detect if we should provide guidance (client-aware approach)
-function shouldProvideGuidance(args: {
-  org: string;
-  since?: string;
-  until?: string;
-}): boolean {
-  // Don't provide guidance - let the tool handle missing dates
-  return false;
-}
-
-// Helper function to add default date range if missing
-function addDefaultDateRange(args: {
-  org: string;
-  since?: string;
-  until?: string;
-  page?: number;
-  per_page?: number;
-}): typeof args {
-  // If no date range provided, use last 30 days
-  if (!args.since && !args.until) {
-    const suggestions = generateDateRangeSuggestions();
-    return {
-      ...args,
-      since: suggestions.last30Days.since,
-      until: suggestions.last30Days.until,
-    };
-  }
-  return args;
-}
-
 // Helper function to detect Docker environment and get image info
 function getDockerInfo(): {
-  isDocker: boolean;
-  imageSha?: string;
-  imageId?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   containerInfo?: any;
+  imageId?: string;
+  imageSha?: string;
+  isDocker: boolean;
 } {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const dockerInfo: any = {
     isDocker: false,
   };
 
   try {
     // Method 1: Check for /.dockerenv file
-    if (existsSync('/.dockerenv')) {
+    if (existsSync("/.dockerenv")) {
       dockerInfo.isDocker = true;
     }
 
     // Method 2: Check cgroup for docker
-    if (existsSync('/proc/1/cgroup')) {
-      const cgroup = readFileSync('/proc/1/cgroup', 'utf8');
-      if (cgroup.includes('docker') || cgroup.includes('containerd')) {
+    if (existsSync("/proc/1/cgroup")) {
+      const cgroup = readFileSync("/proc/1/cgroup", "utf8");
+      if (cgroup.includes("docker") || cgroup.includes("containerd")) {
         dockerInfo.isDocker = true;
       }
     }
@@ -228,41 +220,57 @@ function getDockerInfo(): {
     // If we detected Docker, try to get image information
     if (dockerInfo.isDocker) {
       // Try to get image SHA from environment variables
-      dockerInfo.imageSha = process.env.IMAGE_SHA || process.env.DOCKER_IMAGE_SHA;
+      dockerInfo.imageSha =
+        process.env.IMAGE_SHA || process.env.DOCKER_IMAGE_SHA;
       dockerInfo.imageId = process.env.IMAGE_ID || process.env.DOCKER_IMAGE_ID;
 
       // Try to read Docker metadata if available
       try {
-        if (existsSync('/proc/self/mountinfo')) {
-          const mountinfo = readFileSync('/proc/self/mountinfo', 'utf8');
-          const dockerMatch = mountinfo.match(/\/docker\/containers\/([a-f0-9]{64})/);
+        if (existsSync("/proc/self/mountinfo")) {
+          const mountinfo = readFileSync("/proc/self/mountinfo", "utf8");
+          const dockerMatch = mountinfo.match(
+            /\/docker\/containers\/([a-f0-9]{64})/,
+          );
           if (dockerMatch) {
             dockerInfo.containerId = dockerMatch[1].substring(0, 12); // Short container ID
           }
         }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (e) {
         // Ignore errors reading mount info
       }
 
       // Check for common Docker environment variables
-      const dockerEnvVars = Object.keys(process.env).filter(key => 
-        key.startsWith('DOCKER_') || 
-        key === 'HOSTNAME' ||
-        key === 'PATH'
+      const dockerEnvVars = Object.keys(process.env).filter(
+        (key) =>
+          key.startsWith("DOCKER_") || key === "HOSTNAME" || key === "PATH",
       );
-      
+
       if (dockerEnvVars.length > 0) {
         dockerInfo.dockerEnvVars = dockerEnvVars;
       }
     }
-
   } catch (error) {
     // If there's any error detecting Docker, just mark as not Docker
     dockerInfo.isDocker = false;
-    dockerInfo.detectionError = error instanceof Error ? error.message : String(error);
+    dockerInfo.detectionError =
+      error instanceof Error ? error.message : String(error);
   }
 
   return dockerInfo;
+}
+
+// Helper function to detect if we should provide guidance (client-aware approach)
+function shouldProvideGuidance(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  args: {
+    org: string;
+    since?: string;
+    until?: string;
+  },
+): boolean {
+  // Don't provide guidance - let the tool handle missing dates
+  return false;
 }
 
 // Copilot Metrics Tools
@@ -277,7 +285,7 @@ server.addTool({
   execute: async (args) => {
     // Add default date range if missing (last 30 days)
     const argsWithDefaults = addDefaultDateRange(args);
-    
+
     // Provide guidance if no date range is specified
     if (shouldProvideGuidance(argsWithDefaults)) {
       logger.info("No date range provided, offering user guidance", {
@@ -639,7 +647,7 @@ server.addTool({
     "Get information about the MCP client that's currently connected (for debugging and support)",
   execute: async () => {
     const dockerInfo = getDockerInfo();
-    
+
     return JSON.stringify(
       {
         client: clientInfo,
