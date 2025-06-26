@@ -657,3 +657,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Built with [FastMCP](https://github.com/punkpeye/fastmcp) framework
 - Uses the [Octokit](https://github.com/octokit/octokit.js) library for GitHub API interactions
 - Docker multi-platform builds powered by GitHub Actions
+
+## Known Issues

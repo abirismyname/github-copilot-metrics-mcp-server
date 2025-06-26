@@ -12,11 +12,16 @@ import {
 } from "./error-handling.js";
 import { GitHubService } from "./github-service.js";
 import { Logger } from "./logger.js";
+import { MCPClientDetector } from "./mcp-client-detector.js";
 
 // Load environment variables
 config();
 
 const logger = Logger.getInstance();
+
+// Initialize MCP client detector
+const clientDetector = MCPClientDetector.getInstance();
+const clientInfo = clientDetector.getClientInfo();
 
 // Validate configuration on startup
 const appConfig = validateConfig();
@@ -32,6 +37,40 @@ const server = new FastMCP({
   name: "GitHub Copilot Manager",
   version: "1.0.0",
 });
+
+// Helper function to provide user-friendly guidance for missing date ranges
+function createDateRangeGuidance(org: string): string {
+  const suggestions = generateDateRangeSuggestions();
+
+  const baseGuidance = `
+📅 **Date Range Recommended for Your Client**
+
+To ensure the best experience with your MCP client, please specify a date range. Here are some suggestions:
+
+**Recommended prompts:**
+• "Get Copilot usage metrics for organization '${org}' for the last 7 days"
+• "Get Copilot usage metrics for organization '${org}' for the last 30 days"  
+• "Get Copilot usage metrics for organization '${org}' from ${suggestions.last30Days.since} to ${suggestions.last30Days.until}"
+
+**Why specify dates for your client?**
+- Prevents potential compatibility issues with your current MCP client
+- Provides more predictable results and better error handling
+- Helps avoid fallback logic that may cause delays
+
+**Alternative: Use seat information instead**
+If you just want to see who has Copilot access, try:
+• "List all Copilot seats for organization '${org}'"
+
+**Current date suggestions:**
+- Last 7 days: ${suggestions.last7Days.since} to ${suggestions.last7Days.until}
+- Last 30 days: ${suggestions.last30Days.since} to ${suggestions.last30Days.until}
+- Current month: ${suggestions.currentMonth.since} to ${suggestions.currentMonth.until}`.trim();
+
+  return clientDetector.getClientSpecificGuidance(
+    baseGuidance,
+    clientInfo.type,
+  );
+}
 
 // Helper function to handle tool execution with proper error handling
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -82,6 +121,56 @@ async function executeToolSafely<T extends { data: any }>(
   }
 }
 
+// Helper function to provide date range suggestions
+function generateDateRangeSuggestions(): {
+  currentMonth: { since: string; until: string };
+  last30Days: { since: string; until: string };
+  last7Days: { since: string; until: string };
+} {
+  const today = new Date();
+  const formatDate = (date: Date) => date.toISOString().split("T")[0];
+
+  // Last 7 days
+  const last7Start = new Date(today);
+  last7Start.setDate(today.getDate() - 7);
+
+  // Last 30 days
+  const last30Start = new Date(today);
+  last30Start.setDate(today.getDate() - 30);
+
+  // Current month
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  return {
+    currentMonth: {
+      since: formatDate(monthStart),
+      until: formatDate(today),
+    },
+    last30Days: {
+      since: formatDate(last30Start),
+      until: formatDate(today),
+    },
+    last7Days: {
+      since: formatDate(last7Start),
+      until: formatDate(today),
+    },
+  };
+}
+
+// Helper function to detect if we should provide guidance (client-aware approach)
+function shouldProvideGuidance(args: {
+  org: string;
+  since?: string;
+  until?: string;
+}): boolean {
+  // Only provide guidance if no date range AND client needs it
+  const noDateRange = !args.since && !args.until;
+  if (!noDateRange) return false;
+
+  // Check if the detected client needs extra guidance for date ranges
+  return clientDetector.shouldProvideExtraGuidance();
+}
+
 // Copilot Metrics Tools
 server.addTool({
   annotations: {
@@ -90,8 +179,60 @@ server.addTool({
     title: "Get Copilot Usage Metrics for Organization",
   },
   description:
-    "Retrieve GitHub Copilot usage metrics for an organization. Falls back to seat information if usage metrics are not available.",
+    "Retrieve GitHub Copilot usage metrics for an organization. Optionally specify 'since' and 'until' date parameters for specific time ranges. Falls back to seat information if usage metrics are not available.",
   execute: async (args) => {
+    // Provide guidance if no date range is specified
+    if (shouldProvideGuidance(args)) {
+      logger.info("No date range provided, offering user guidance", {
+        clientConfidence: clientInfo.confidence,
+        clientName: clientInfo.name,
+        clientType: clientInfo.type,
+        org: args.org,
+      });
+
+      const guidance = createDateRangeGuidance(args.org);
+
+      // Still attempt to get seat information as a fallback with guidance
+      try {
+        const seatsData = await executeToolSafely(
+          () =>
+            githubService.getCopilotSeatsForOrg(
+              args.org,
+              args.page,
+              args.per_page,
+            ),
+          "get_copilot_seats_org_fallback",
+        );
+
+        return JSON.stringify(
+          {
+            guidance,
+            note: "📍 No date range specified. Showing current seat information instead.",
+            organization: args.org,
+            seats_data: JSON.parse(seatsData),
+            suggestion:
+              "For usage metrics, please specify a date range in your next request.",
+          },
+          null,
+          2,
+        );
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_seatsError) {
+        // If even seats fail, just return the guidance
+        return JSON.stringify(
+          {
+            error: "Unable to retrieve data without a date range.",
+            guidance,
+            organization: args.org,
+            suggestion:
+              "Please try again with a specific date range as shown above.",
+          },
+          null,
+          2,
+        );
+      }
+    }
+
     try {
       return await executeToolSafely(
         () =>
@@ -158,8 +299,45 @@ server.addTool({
     readOnlyHint: true,
     title: "Get Copilot Usage Metrics for Enterprise",
   },
-  description: "Retrieve GitHub Copilot usage metrics for an enterprise",
+  description:
+    "Retrieve GitHub Copilot usage metrics for an enterprise. Optionally specify 'since' and 'until' date parameters for specific time ranges.",
   execute: async (args) => {
+    // Provide guidance if no date range is specified for enterprise metrics
+    if (
+      shouldProvideGuidance({
+        org: args.enterprise,
+        since: args.since,
+        until: args.until,
+      })
+    ) {
+      logger.info(
+        "No date range provided for enterprise metrics, offering user guidance",
+        {
+          clientName: clientInfo.name,
+          clientType: clientInfo.type,
+          enterprise: args.enterprise,
+        },
+      );
+
+      const guidance = createDateRangeGuidance(args.enterprise).replace(
+        "organization",
+        "enterprise",
+      );
+
+      return JSON.stringify(
+        {
+          enterprise: args.enterprise,
+          error:
+            "Enterprise usage metrics work better with a date range for your client.",
+          guidance,
+          suggestion:
+            "Please specify a date range for optimal results with your current MCP client.",
+        },
+        null,
+        2,
+      );
+    }
+
     return executeToolSafely(
       () =>
         githubService.getCopilotUsageForEnterprise(
@@ -351,6 +529,50 @@ ${args.usage_data}
 Please provide actionable insights and recommendations based on this data.`;
   },
   name: "copilot-usage-report",
+});
+
+// Debugging tool to show MCP client information
+server.addTool({
+  annotations: {
+    openWorldHint: true,
+    readOnlyHint: true,
+    title: "Get MCP Client Information",
+  },
+  description:
+    "Get information about the MCP client that's currently connected (for debugging and support)",
+  execute: async () => {
+    return JSON.stringify(
+      {
+        client: clientInfo,
+        environment: {
+          argv: process.argv,
+          mcpEnvironmentVars: Object.keys(process.env).filter((key) =>
+            key.startsWith("MCP_"),
+          ),
+          nodeVersion: process.version,
+          pid: process.pid,
+          platform: process.platform,
+          ppid: process.ppid,
+          title: process.title,
+          vsCodeEnvironmentVars: Object.keys(process.env).filter((key) =>
+            key.startsWith("VSCODE_"),
+          ),
+        },
+        recommendations: {
+          claude:
+            "Claude Desktop handles flexible prompts well and has good error recovery",
+          general:
+            "Different MCP clients may behave differently with the same prompts",
+          vscode:
+            "For VS Code, use explicit date ranges in your prompts for best results",
+        },
+      },
+      null,
+      2,
+    );
+  },
+  name: "get_mcp_client_info",
+  parameters: z.object({}),
 });
 
 server.start({
