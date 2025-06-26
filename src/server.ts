@@ -171,12 +171,28 @@ function shouldProvideGuidance(args: {
   since?: string;
   until?: string;
 }): boolean {
-  // Only provide guidance if no date range AND client needs it
-  const noDateRange = !args.since && !args.until;
-  if (!noDateRange) return false;
+  // Don't provide guidance - let the tool handle missing dates
+  return false;
+}
 
-  // Check if the detected client needs extra guidance for date ranges
-  return clientDetector.shouldProvideExtraGuidance();
+// Helper function to add default date range if missing
+function addDefaultDateRange(args: {
+  org: string;
+  since?: string;
+  until?: string;
+  page?: number;
+  per_page?: number;
+}): typeof args {
+  // If no date range provided, use last 30 days
+  if (!args.since && !args.until) {
+    const suggestions = generateDateRangeSuggestions();
+    return {
+      ...args,
+      since: suggestions.last30Days.since,
+      until: suggestions.last30Days.until,
+    };
+  }
+  return args;
 }
 
 // Helper function to detect Docker environment and get image info
@@ -259,16 +275,19 @@ server.addTool({
   description:
     "Retrieve GitHub Copilot usage metrics for an organization. Optionally specify 'since' and 'until' date parameters for specific time ranges. Falls back to seat information if usage metrics are not available.",
   execute: async (args) => {
+    // Add default date range if missing (last 30 days)
+    const argsWithDefaults = addDefaultDateRange(args);
+    
     // Provide guidance if no date range is specified
-    if (shouldProvideGuidance(args)) {
+    if (shouldProvideGuidance(argsWithDefaults)) {
       logger.info("No date range provided, offering user guidance", {
         clientConfidence: clientInfo.confidence,
         clientName: clientInfo.name,
         clientType: clientInfo.type,
-        org: args.org,
+        org: argsWithDefaults.org,
       });
 
-      const guidance = createDateRangeGuidance(args.org);
+      const guidance = createDateRangeGuidance(argsWithDefaults.org);
 
       // Still attempt to get seat information as a fallback with guidance
       try {
@@ -286,7 +305,7 @@ server.addTool({
           {
             guidance,
             note: "📍 No date range specified. Showing current seat information instead.",
-            organization: args.org,
+            organization: argsWithDefaults.org,
             seats_data: JSON.parse(seatsData),
             suggestion:
               "For usage metrics, please specify a date range in your next request.",
@@ -301,7 +320,7 @@ server.addTool({
           {
             error: "Unable to retrieve data without a date range.",
             guidance,
-            organization: args.org,
+            organization: argsWithDefaults.org,
             suggestion:
               "Please try again with a specific date range as shown above.",
           },
@@ -315,11 +334,11 @@ server.addTool({
       return await executeToolSafely(
         () =>
           githubService.getCopilotUsageForOrg(
-            args.org,
-            args.since,
-            args.until,
-            args.page,
-            args.per_page,
+            argsWithDefaults.org,
+            argsWithDefaults.since,
+            argsWithDefaults.until,
+            argsWithDefaults.page,
+            argsWithDefaults.per_page,
           ),
         "get_copilot_usage_org",
       );
@@ -330,24 +349,24 @@ server.addTool({
       if (errorMessage.includes("404") || errorMessage.includes("Not Found")) {
         logger.info(
           "Usage metrics not available, falling back to seat information",
-          { org: args.org },
+          { org: argsWithDefaults.org },
         );
         const seatsData = await executeToolSafely(
           () =>
             githubService.getCopilotSeatsForOrg(
-              args.org,
-              args.page,
-              args.per_page,
+              argsWithDefaults.org,
+              argsWithDefaults.page,
+              argsWithDefaults.per_page,
             ),
           "get_copilot_seats_org_fallback",
         );
         return JSON.stringify(
           {
             note: "Usage metrics not available for this organization. Showing seat information instead.",
-            organization: args.org,
+            organization: argsWithDefaults.org,
             requested_period:
-              args.since && args.until
-                ? `${args.since} to ${args.until}`
+              argsWithDefaults.since && argsWithDefaults.until
+                ? `${argsWithDefaults.since} to ${argsWithDefaults.until}`
                 : "Last 30 days (not available)",
             seats_data: JSON.parse(seatsData),
           },
