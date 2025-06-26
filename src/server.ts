@@ -13,6 +13,7 @@ import {
 import { GitHubService } from "./github-service.js";
 import { Logger } from "./logger.js";
 import { MCPClientDetector } from "./mcp-client-detector.js";
+import { readFileSync, existsSync } from "fs";
 
 // Load environment variables
 config();
@@ -22,6 +23,17 @@ const logger = Logger.getInstance();
 // Initialize MCP client detector
 const clientDetector = MCPClientDetector.getInstance();
 const clientInfo = clientDetector.getClientInfo();
+
+// Get Docker information
+const dockerInfo = getDockerInfo();
+
+// Log MCP client and Docker information at startup
+logger.info('Server startup information:', { 
+  clientInfo,
+  dockerInfo,
+  nodeVersion: process.version,
+  platform: process.platform
+});
 
 // Validate configuration on startup
 const appConfig = validateConfig();
@@ -34,7 +46,7 @@ const githubService = new GitHubService({
 });
 
 const server = new FastMCP({
-  name: "GitHub Copilot Manager",
+  name: "GitHub Copilot Metrics Manager",
   version: "1.0.0",
 });
 
@@ -56,10 +68,6 @@ To ensure the best experience with your MCP client, please specify a date range.
 - Prevents potential compatibility issues with your current MCP client
 - Provides more predictable results and better error handling
 - Helps avoid fallback logic that may cause delays
-
-**Alternative: Use seat information instead**
-If you just want to see who has Copilot access, try:
-• "List all Copilot seats for organization '${org}'"
 
 **Current date suggestions:**
 - Last 7 days: ${suggestions.last7Days.since} to ${suggestions.last7Days.until}
@@ -169,6 +177,76 @@ function shouldProvideGuidance(args: {
 
   // Check if the detected client needs extra guidance for date ranges
   return clientDetector.shouldProvideExtraGuidance();
+}
+
+// Helper function to detect Docker environment and get image info
+function getDockerInfo(): {
+  isDocker: boolean;
+  imageSha?: string;
+  imageId?: string;
+  containerInfo?: any;
+} {
+  const dockerInfo: any = {
+    isDocker: false,
+  };
+
+  try {
+    // Method 1: Check for /.dockerenv file
+    if (existsSync('/.dockerenv')) {
+      dockerInfo.isDocker = true;
+    }
+
+    // Method 2: Check cgroup for docker
+    if (existsSync('/proc/1/cgroup')) {
+      const cgroup = readFileSync('/proc/1/cgroup', 'utf8');
+      if (cgroup.includes('docker') || cgroup.includes('containerd')) {
+        dockerInfo.isDocker = true;
+      }
+    }
+
+    // Method 3: Check if we're PID 1 (common in containers)
+    if (process.pid === 1) {
+      dockerInfo.isDocker = true;
+    }
+
+    // If we detected Docker, try to get image information
+    if (dockerInfo.isDocker) {
+      // Try to get image SHA from environment variables
+      dockerInfo.imageSha = process.env.IMAGE_SHA || process.env.DOCKER_IMAGE_SHA;
+      dockerInfo.imageId = process.env.IMAGE_ID || process.env.DOCKER_IMAGE_ID;
+
+      // Try to read Docker metadata if available
+      try {
+        if (existsSync('/proc/self/mountinfo')) {
+          const mountinfo = readFileSync('/proc/self/mountinfo', 'utf8');
+          const dockerMatch = mountinfo.match(/\/docker\/containers\/([a-f0-9]{64})/);
+          if (dockerMatch) {
+            dockerInfo.containerId = dockerMatch[1].substring(0, 12); // Short container ID
+          }
+        }
+      } catch (e) {
+        // Ignore errors reading mount info
+      }
+
+      // Check for common Docker environment variables
+      const dockerEnvVars = Object.keys(process.env).filter(key => 
+        key.startsWith('DOCKER_') || 
+        key === 'HOSTNAME' ||
+        key === 'PATH'
+      );
+      
+      if (dockerEnvVars.length > 0) {
+        dockerInfo.dockerEnvVars = dockerEnvVars;
+      }
+    }
+
+  } catch (error) {
+    // If there's any error detecting Docker, just mark as not Docker
+    dockerInfo.isDocker = false;
+    dockerInfo.detectionError = error instanceof Error ? error.message : String(error);
+  }
+
+  return dockerInfo;
 }
 
 // Copilot Metrics Tools
@@ -541,9 +619,12 @@ server.addTool({
   description:
     "Get information about the MCP client that's currently connected (for debugging and support)",
   execute: async () => {
+    const dockerInfo = getDockerInfo();
+    
     return JSON.stringify(
       {
         client: clientInfo,
+        docker: dockerInfo,
         environment: {
           argv: process.argv,
           mcpEnvironmentVars: Object.keys(process.env).filter((key) =>
