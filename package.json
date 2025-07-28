@@ -41,10 +41,10 @@
   "license": "MIT",
   "description": "A GitHub Copilot Metrics MCP server for managing Copilot metrics and user management",
   "dependencies": {
-    "@jest/globals": "^30.0.3",
-    "@octokit/auth-app": "^8.0.1",
+    "@jest/globals": "^30.0.5",
+    "@octokit/auth-app": "^8.0.2",
     "@octokit/rest": "^22.0.0",
-    "dotenv": "^16.5.0",
+    "dotenv": "^17.2.1",
     "fastmcp": "latest",
     "zod": "latest"
   },
@@ -60,17 +60,17 @@
     ]
   },
   "devDependencies": {
-    "@eslint/js": "^9.29.0",
+    "@eslint/js": "^9.32.0",
     "@tsconfig/node22": "^22.0.2",
     "@types/jest": "^30.0.0",
-    "eslint-config-prettier": "^10.1.5",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-perfectionist": "^4.15.0",
-    "jiti": "^2.4.2",
-    "prettier": "^3.6.1",
-    "semantic-release": "^24.2.5",
+    "jiti": "^2.5.1",
+    "prettier": "^3.6.2",
+    "semantic-release": "^24.2.7",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.34.1",
+    "typescript-eslint": "^8.38.0",
     "vitest": "^3.2.4"
   }
 }
